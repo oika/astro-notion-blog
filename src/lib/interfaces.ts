@@ -18,35 +18,164 @@ export interface Post {
   Rank: number
 }
 
-export interface Block {
+interface BlockBase {
   Id: string
-  Type: string
   HasChildren: boolean
-
-  Paragraph?: Paragraph
-  Heading1?: Heading1
-  Heading2?: Heading2
-  Heading3?: Heading3
-  BulletedListItem?: BulletedListItem
-  NumberedListItem?: NumberedListItem
-  ToDo?: ToDo
-  Image?: Image
-  File?: File
-  Code?: Code
-  Quote?: Quote
-  Equation?: Equation
-  Callout?: Callout
-  SyncedBlock?: SyncedBlock
-  Toggle?: Toggle
-  Embed?: Embed
-  Video?: Video
-  Bookmark?: Bookmark
-  LinkPreview?: LinkPreview
-  Table?: Table
-  ColumnList?: ColumnList
-  TableOfContents?: TableOfContents
-  LinkToPage?: LinkToPage
 }
+
+interface BookmarkBlock extends BlockBase {
+  Type: 'bookmark'
+  Bookmark: Bookmark
+}
+interface BreadcrumbBlock extends BlockBase {
+  Type: 'breadcrumb'
+}
+interface BulletedListItemBlock extends BlockBase {
+  Type: 'bulleted_list_item'
+  BulletedListItem: BulletedListItem
+}
+interface CalloutBlock extends BlockBase {
+  Type: 'callout'
+  Callout: Callout
+}
+interface ChildDatabaseBlock extends BlockBase {
+  Type: 'child_database'
+}
+interface ChildPageBlock extends BlockBase {
+  Type: 'child_page'
+}
+interface CodeBlock extends BlockBase {
+  Type: 'code'
+  Code: Code
+}
+interface ColumnBlock extends BlockBase {
+  Type: 'column'
+}
+interface ColumnListBlock extends BlockBase {
+  Type: 'column_list'
+  ColumnList: ColumnList
+}
+interface DividerBlock extends BlockBase {
+  Type: 'divider'
+}
+interface EmbedBlock extends BlockBase {
+  Type: 'embed'
+  Embed: Embed
+}
+interface EquationBlock extends BlockBase {
+  Type: 'equation'
+  Equation: Equation
+}
+interface FileBlock extends BlockBase {
+  Type: 'file'
+  File: File
+}
+interface Heading1Block extends BlockBase {
+  Type: 'heading_1'
+  Heading1: Heading1
+}
+interface Heading2Block extends BlockBase {
+  Type: 'heading_2'
+  Heading2: Heading2
+}
+interface Heading3Block extends BlockBase {
+  Type: 'heading_3'
+  Heading3: Heading3
+}
+interface ImageBlock extends BlockBase {
+  Type: 'image'
+  Image: Image
+}
+interface LinkPreviewBlock extends BlockBase {
+  Type: 'link_preview'
+  LinkPreview: LinkPreview
+}
+interface LinkToPageBlock extends BlockBase {
+  Type: 'link_to_page'
+  LinkToPage: LinkToPage | undefined
+}
+interface NumberedListItemBlock extends BlockBase {
+  Type: 'numbered_list_item'
+  NumberedListItem: NumberedListItem
+}
+interface ParagraphBlock extends BlockBase {
+  Type: 'paragraph'
+  Paragraph: Paragraph
+}
+interface PdfBlock extends BlockBase {
+  Type: 'pdf'
+}
+interface QuoteBlock extends BlockBase {
+  Type: 'quote'
+  Quote: Quote
+}
+interface SyncedBlockBlock extends BlockBase {
+  Type: 'synced_block'
+  SyncedBlock: SyncedBlock
+}
+interface TableBlock extends BlockBase {
+  Type: 'table'
+  Table: Table
+}
+interface TableOfContentsBlock extends BlockBase {
+  Type: 'table_of_contents'
+  TableOfContents: TableOfContents
+}
+interface TableRowBlock extends BlockBase {
+  Type: 'table_row'
+}
+interface TemplateBlock extends BlockBase {
+  Type: 'template'
+}
+interface ToDoBlock extends BlockBase {
+  Type: 'to_do'
+  ToDo: ToDo
+}
+interface ToggleBlock extends BlockBase {
+  Type: 'toggle'
+  Toggle: Toggle
+}
+interface UnsupportedBlock extends BlockBase {
+  Type: 'unsupported'
+}
+interface VideoBlock extends BlockBase {
+  Type: 'video'
+  Video: Video
+}
+
+export type Block =
+  BookmarkBlock
+  | BreadcrumbBlock
+  | BulletedListItemBlock
+  | CalloutBlock
+  | ChildDatabaseBlock
+  | ChildPageBlock
+  | CodeBlock
+  | ColumnBlock
+  | ColumnListBlock
+  | DividerBlock
+  | EmbedBlock
+  | EquationBlock
+  | FileBlock
+  | Heading1Block
+  | Heading2Block
+  | Heading3Block
+  | ImageBlock
+  | LinkPreviewBlock
+  | LinkToPageBlock
+  | NumberedListItemBlock
+  | ParagraphBlock
+  | PdfBlock
+  | QuoteBlock
+  | SyncedBlockBlock
+  | TableBlock
+  | TableOfContentsBlock
+  | TableRowBlock
+  | TemplateBlock
+  | ToDoBlock
+  | ToggleBlock
+  | UnsupportedBlock
+  | VideoBlock
 
 export interface Paragraph {
   RichTexts: RichText[]
