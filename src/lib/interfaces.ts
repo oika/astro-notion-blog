@@ -1,20 +1,20 @@
 export interface Database {
   Title: string
   Description: string
-  Icon: FileObject | Emoji | null
-  Cover: FileObject | null
+  Icon: FileOrExternalWithUrl | Emoji | null
+  Cover: FileOrExternalWithUrl | null
 }
 
 export interface Post {
   PageId: string
   Title: string
-  Icon: FileObject | Emoji | null
-  Cover: FileObject | null
+  Icon: ExternalWithUrl | Emoji | null
+  Cover: FileOrExternalWithUrl | null
   Slug: string
   Date: string
   Tags: SelectProperty[]
   Excerpt: string
-  FeaturedImage: FileObject | null
+  FeaturedImage: FileOrExternalWithUrlAndExpiryTime | null
   Rank: number
 }
 
@@ -228,7 +228,7 @@ export interface ToDo {
 export interface Image {
   Caption: RichText[]
   Type: string
-  File?: FileObject
+  File?: FileWithUrlAndExpiryTime
   External?: External
   Width?: number
   Height?: number
@@ -243,17 +243,29 @@ export interface Video {
 export interface File {
   Caption: RichText[]
   Type: string
-  File?: FileObject
+  File?: FileWithUrlAndExpiryTime
   External?: External
 }
 
-export interface FileObject {
-  Type: string
+export interface External {
+  Url: string
+}
+
+export interface ExternalWithUrl {
+  Type: 'external'
+  Url: string
+}
+
+export interface FileWithUrlAndExpiryTime {
+  Type: 'file'
   Url: string
   ExpiryTime: string
 }
 
-export interface External {
+export type FileOrExternalWithUrlAndExpiryTime = ExternalWithUrl | FileWithUrlAndExpiryTime
+
+export interface FileOrExternalWithUrl {
+  Type: 'file' | 'external'
   Url: string
 }
 
@@ -275,7 +287,7 @@ export interface Equation {
 
 export interface Callout {
   RichTexts: RichText[]
-  Icon: FileObject | Emoji | null
+  Icon: FileOrExternalWithUrl | Emoji | null
   Color: string
   Children?: Block[]
 }
@@ -360,7 +372,7 @@ export interface Text {
 }
 
 export interface Emoji {
-  Type: string
+  Type: 'emoji'
   Emoji: string
 }
 

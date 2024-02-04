@@ -47,10 +47,12 @@ import type {
   Annotation,
   SelectProperty,
   Emoji,
-  FileObject,
   LinkToPage,
   Mention,
   Reference,
+  FileOrExternalWithUrl,
+  ExternalWithUrl,
+  FileOrExternalWithUrlAndExpiryTime,
 } from '../interfaces'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Client, APIResponseError } from '@notionhq/client'
@@ -449,7 +451,7 @@ export async function getDatabase(): Promise<Database> {
     }
   )
 
-  let icon: FileObject | Emoji | null = null
+  let icon: FileOrExternalWithUrl | Emoji | null = null
   if (res.icon) {
     if (res.icon.type === 'emoji' && 'emoji' in res.icon) {
       icon = {
@@ -469,7 +471,7 @@ export async function getDatabase(): Promise<Database> {
     }
   }
 
-  let cover: FileObject | null = null
+  let cover: FileOrExternalWithUrl | null = null
   if (res.cover) {
     cover = {
       Type: res.cover.type,
@@ -664,7 +666,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
         Equation: equation
       }
     case 'callout':
-      let icon: FileObject | Emoji | null = null
+      let icon: FileOrExternalWithUrl | Emoji | null = null
       if (blockObject.callout.icon) {
         if (
           blockObject.callout.icon.type === 'emoji' &&
@@ -954,7 +956,7 @@ function _validPageObject(pageObject: responses.PageObject): boolean {
 function _buildPost(pageObject: responses.PageObject): Post {
   const prop = pageObject.properties
 
-  let icon: FileObject | Emoji | null = null
+  let icon: ExternalWithUrl | Emoji | null = null
   if (pageObject.icon) {
     if (pageObject.icon.type === 'emoji' && 'emoji' in pageObject.icon) {
       icon = {
@@ -972,7 +974,7 @@ function _buildPost(pageObject: responses.PageObject): Post {
     }
   }
 
-  let cover: FileObject | null = null
+  let cover: FileOrExternalWithUrl | null = null
   if (pageObject.cover) {
     cover = {
       Type: pageObject.cover.type,
@@ -980,16 +982,16 @@ function _buildPost(pageObject: responses.PageObject): Post {
     }
   }
 
-  let featuredImage: FileObject | null = null
+  let featuredImage: FileOrExternalWithUrlAndExpiryTime | null = null
   if (prop.FeaturedImage.files && prop.FeaturedImage.files.length > 0) {
     if (prop.FeaturedImage.files[0].type === 'external') {
       featuredImage = {
-        Type: prop.FeaturedImage.type,
+        Type: 'external',
         Url: prop.FeaturedImage.files[0].external.url,
       }
     } else if (prop.FeaturedImage.files[0].file) {
       featuredImage = {
-        Type: prop.FeaturedImage.type,
+        Type: 'file',
         Url: prop.FeaturedImage.files[0].file.url,
         ExpiryTime: prop.FeaturedImage.files[0].file.expiry_time,
       }
