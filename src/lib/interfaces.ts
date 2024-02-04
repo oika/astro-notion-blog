@@ -23,122 +23,122 @@ interface BlockBase {
   HasChildren: boolean
 }
 
-interface BookmarkBlock extends BlockBase {
+export interface BookmarkBlock extends BlockBase {
   Type: 'bookmark'
   Bookmark: Bookmark
 }
-interface BreadcrumbBlock extends BlockBase {
+export interface BreadcrumbBlock extends BlockBase {
   Type: 'breadcrumb'
 }
-interface BulletedListItemBlock extends BlockBase {
+export interface BulletedListItemBlock extends BlockBase {
   Type: 'bulleted_list_item'
   BulletedListItem: BulletedListItem
 }
-interface CalloutBlock extends BlockBase {
+export interface CalloutBlock extends BlockBase {
   Type: 'callout'
   Callout: Callout
 }
-interface ChildDatabaseBlock extends BlockBase {
+export interface ChildDatabaseBlock extends BlockBase {
   Type: 'child_database'
 }
-interface ChildPageBlock extends BlockBase {
+export interface ChildPageBlock extends BlockBase {
   Type: 'child_page'
 }
-interface CodeBlock extends BlockBase {
+export interface CodeBlock extends BlockBase {
   Type: 'code'
   Code: Code
 }
-interface ColumnBlock extends BlockBase {
+export interface ColumnBlock extends BlockBase {
   Type: 'column'
 }
-interface ColumnListBlock extends BlockBase {
+export interface ColumnListBlock extends BlockBase {
   Type: 'column_list'
   ColumnList: ColumnList
 }
-interface DividerBlock extends BlockBase {
+export interface DividerBlock extends BlockBase {
   Type: 'divider'
 }
-interface EmbedBlock extends BlockBase {
+export interface EmbedBlock extends BlockBase {
   Type: 'embed'
   Embed: Embed
 }
-interface EquationBlock extends BlockBase {
+export interface EquationBlock extends BlockBase {
   Type: 'equation'
   Equation: Equation
 }
-interface FileBlock extends BlockBase {
+export interface FileBlock extends BlockBase {
   Type: 'file'
   File: File
 }
-interface Heading1Block extends BlockBase {
+export interface Heading1Block extends BlockBase {
   Type: 'heading_1'
   Heading1: Heading1
 }
-interface Heading2Block extends BlockBase {
+export interface Heading2Block extends BlockBase {
   Type: 'heading_2'
   Heading2: Heading2
 }
-interface Heading3Block extends BlockBase {
+export interface Heading3Block extends BlockBase {
   Type: 'heading_3'
   Heading3: Heading3
 }
-interface ImageBlock extends BlockBase {
+export interface ImageBlock extends BlockBase {
   Type: 'image'
   Image: Image
 }
-interface LinkPreviewBlock extends BlockBase {
+export interface LinkPreviewBlock extends BlockBase {
   Type: 'link_preview'
   LinkPreview: LinkPreview
 }
-interface LinkToPageBlock extends BlockBase {
+export interface LinkToPageBlock extends BlockBase {
   Type: 'link_to_page'
   LinkToPage: LinkToPage | undefined
 }
-interface NumberedListItemBlock extends BlockBase {
+export interface NumberedListItemBlock extends BlockBase {
   Type: 'numbered_list_item'
   NumberedListItem: NumberedListItem
 }
-interface ParagraphBlock extends BlockBase {
+export interface ParagraphBlock extends BlockBase {
   Type: 'paragraph'
   Paragraph: Paragraph
 }
-interface PdfBlock extends BlockBase {
+export interface PdfBlock extends BlockBase {
   Type: 'pdf'
 }
-interface QuoteBlock extends BlockBase {
+export interface QuoteBlock extends BlockBase {
   Type: 'quote'
   Quote: Quote
 }
-interface SyncedBlockBlock extends BlockBase {
+export interface SyncedBlockBlock extends BlockBase {
   Type: 'synced_block'
   SyncedBlock: SyncedBlock
 }
-interface TableBlock extends BlockBase {
+export interface TableBlock extends BlockBase {
   Type: 'table'
   Table: Table
 }
-interface TableOfContentsBlock extends BlockBase {
+export interface TableOfContentsBlock extends BlockBase {
   Type: 'table_of_contents'
   TableOfContents: TableOfContents
 }
-interface TableRowBlock extends BlockBase {
+export interface TableRowBlock extends BlockBase {
   Type: 'table_row'
 }
-interface TemplateBlock extends BlockBase {
+export interface TemplateBlock extends BlockBase {
   Type: 'template'
 }
-interface ToDoBlock extends BlockBase {
+export interface ToDoBlock extends BlockBase {
   Type: 'to_do'
   ToDo: ToDo
 }
-interface ToggleBlock extends BlockBase {
+export interface ToggleBlock extends BlockBase {
   Type: 'toggle'
   Toggle: Toggle
 }
-interface UnsupportedBlock extends BlockBase {
+export interface UnsupportedBlock extends BlockBase {
   Type: 'unsupported'
 }
-interface VideoBlock extends BlockBase {
+export interface VideoBlock extends BlockBase {
   Type: 'video'
   Video: Video
 }
@@ -176,6 +176,8 @@ export type Block =
   | ToggleBlock
   | UnsupportedBlock
   | VideoBlock
+
+export type BlockType = Block['Type']
 
 export interface Paragraph {
   RichTexts: RichText[]
@@ -248,7 +250,7 @@ export interface File {
 export interface FileObject {
   Type: string
   Url: string
-  ExpiryTime?: string
+  ExpiryTime: string
 }
 
 export interface External {

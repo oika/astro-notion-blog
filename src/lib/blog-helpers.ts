@@ -7,6 +7,7 @@ import type {
   Heading3,
   RichText,
   Column,
+  BlockType,
 } from './interfaces'
 import { pathJoin } from './utils'
 
@@ -16,7 +17,7 @@ export const filePath = (url: URL): string => {
 }
 
 export const extractTargetBlocks = (
-  blockType: string,
+  blockType: BlockType,
   blocks: Block[]
 ): Block[] => {
   return blocks
@@ -25,45 +26,45 @@ export const extractTargetBlocks = (
         acc.push(block)
       }
 
-      if (block.ColumnList && block.ColumnList.Columns) {
+      if (block.Type === 'column_list' && block.ColumnList.Columns) {
         acc = acc.concat(
           _extractTargetBlockFromColums(blockType, block.ColumnList.Columns)
         )
-      } else if (block.BulletedListItem && block.BulletedListItem.Children) {
+      } else if (block.Type === 'bulleted_list_item' && block.BulletedListItem.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.BulletedListItem.Children)
         )
-      } else if (block.NumberedListItem && block.NumberedListItem.Children) {
+      } else if (block.Type === 'numbered_list_item' && block.NumberedListItem.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.NumberedListItem.Children)
         )
-      } else if (block.ToDo && block.ToDo.Children) {
+      } else if (block.Type === 'to_do' && block.ToDo.Children) {
         acc = acc.concat(extractTargetBlocks(blockType, block.ToDo.Children))
-      } else if (block.SyncedBlock && block.SyncedBlock.Children) {
+      } else if (block.Type === 'synced_block' && block.SyncedBlock.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.SyncedBlock.Children)
         )
-      } else if (block.Toggle && block.Toggle.Children) {
+      } else if (block.Type === 'toggle' && block.Toggle.Children) {
         acc = acc.concat(extractTargetBlocks(blockType, block.Toggle.Children))
-      } else if (block.Paragraph && block.Paragraph.Children) {
+      } else if (block.Type === 'paragraph' && block.Paragraph.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.Paragraph.Children)
         )
-      } else if (block.Heading1 && block.Heading1.Children) {
+      } else if (block.Type === 'heading_1' && block.Heading1.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.Heading1.Children)
         )
-      } else if (block.Heading2 && block.Heading2.Children) {
+      } else if (block.Type === 'heading_2' && block.Heading2.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.Heading2.Children)
         )
-      } else if (block.Heading3 && block.Heading3.Children) {
+      } else if (block.Type === 'heading_3' && block.Heading3.Children) {
         acc = acc.concat(
           extractTargetBlocks(blockType, block.Heading3.Children)
         )
-      } else if (block.Quote && block.Quote.Children) {
+      } else if (block.Type === 'quote' && block.Quote.Children) {
         acc = acc.concat(extractTargetBlocks(blockType, block.Quote.Children))
-      } else if (block.Callout && block.Callout.Children) {
+      } else if (block.Type === 'callout' && block.Callout.Children) {
         acc = acc.concat(extractTargetBlocks(blockType, block.Callout.Children))
       }
 
@@ -73,7 +74,7 @@ export const extractTargetBlocks = (
 }
 
 const _extractTargetBlockFromColums = (
-  blockType: string,
+  blockType: BlockType,
   columns: Column[]
 ): Block[] => {
   return columns
