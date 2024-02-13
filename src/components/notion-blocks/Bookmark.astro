@@ -7,13 +7,15 @@ import { isAmazonURL } from '../../lib/blog-helpers.ts'
 import * as interfaces from '../../lib/interfaces.ts'
 
 export interface Props {
-  block: interfaces.Block
+  block: interfaces.BookmarkBlock | interfaces.LinkPreviewBlock | interfaces.EmbedBlock
   urlMap: { [key: string]: string }
 }
 
 const { block, urlMap } = Astro.props
 
-const urlString = (block.Bookmark || block.LinkPreview || block.Embed)?.Url ?? ''
+const urlString = block.Type === 'bookmark' ? block.Bookmark.Url
+  : block.Type === 'link_preview' ? block.LinkPreview.Url
+  : block.Embed.Url
 
 let url: URL | undefined = undefined;
 let metadata: Metadata | undefined = undefined;

@@ -3,8 +3,8 @@ import * as interfaces from '../../lib/interfaces.ts'
 import NotionBlocks from '../NotionBlocks.astro'
 
 export interface Props {
-  block: interfaces.Block
-  headings: interfaces.Block[]
+  block: interfaces.ColumnListBlock
+  headings: interfaces.HeadingBlock[]
 }
 
 const { block, headings } = Astro.props

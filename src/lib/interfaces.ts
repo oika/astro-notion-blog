@@ -72,15 +72,15 @@ export interface FileBlock extends BlockBase {
 }
 export interface Heading1Block extends BlockBase {
   Type: 'heading_1'
-  Heading1: Heading1
+  Heading1: Heading
 }
 export interface Heading2Block extends BlockBase {
   Type: 'heading_2'
-  Heading2: Heading2
+  Heading2: Heading
 }
 export interface Heading3Block extends BlockBase {
   Type: 'heading_3'
-  Heading3: Heading3
+  Heading3: Heading
 }
 export interface ImageBlock extends BlockBase {
   Type: 'image'
@@ -92,7 +92,7 @@ export interface LinkPreviewBlock extends BlockBase {
 }
 export interface LinkToPageBlock extends BlockBase {
   Type: 'link_to_page'
-  LinkToPage: LinkToPage | undefined
+  LinkToPage: LinkToPage
 }
 export interface NumberedListItemBlock extends BlockBase {
   Type: 'numbered_list_item'
@@ -143,6 +143,8 @@ export interface VideoBlock extends BlockBase {
   Video: Video
 }
 
+export type HeadingBlock = Heading1Block | Heading2Block | Heading3Block
+
 export type Block =
   BookmarkBlock
   | BreadcrumbBlock
@@ -157,9 +159,7 @@ export type Block =
   | EmbedBlock
   | EquationBlock
   | FileBlock
-  | Heading1Block
-  | Heading2Block
-  | Heading3Block
+  | HeadingBlock
   | ImageBlock
   | LinkPreviewBlock
   | LinkToPageBlock
@@ -185,21 +185,7 @@ export interface Paragraph {
   Children?: Block[]
 }
 
-export interface Heading1 {
-  RichTexts: RichText[]
-  Color: string
-  IsToggleable: boolean
-  Children?: Block[]
-}
-
-export interface Heading2 {
-  RichTexts: RichText[]
-  Color: string
-  IsToggleable: boolean
-  Children?: Block[]
-}
-
-export interface Heading3 {
+export interface Heading {
   RichTexts: RichText[]
   Color: string
   IsToggleable: boolean
@@ -348,10 +334,22 @@ export interface Column {
   Children: Block[]
 }
 
-export interface List {
-  Type: string
-  ListItems: Block[]
+export interface BulletedList {
+  Type: 'bulleted_list'
+  ListItems: BulletedListItemBlock[]
 }
+
+export interface NumberedList {
+  Type: 'numbered_list'
+  ListItems: NumberedListItemBlock[]
+}
+
+export interface ToDoList {
+  Type: 'to_do_list'
+  ListItems: ToDoBlock[]
+}
+
+export type List = BulletedList | NumberedList | ToDoList
 
 export interface TableOfContents {
   Color: string

@@ -65,16 +65,22 @@ type Parent = {
   page_id: string
 }
 
-export interface RichTextObject {
-  type: string
+export type RichTextObject = {
   plain_text: string
   annotations: Annotations
   href?: string
-
-  text?: Text
-  mention?: Mention
-  equation?: Equation
-}
+} & (
+  {
+    type: 'text'
+    text: Text
+  } | {
+    type: 'mention'
+    mention: Mention
+  } | {
+    type: 'equation'
+    equation: Equation
+  }
+)
 
 interface Annotations {
   bold: boolean
@@ -95,14 +101,24 @@ interface Link {
   url: string
 }
 
-interface Mention {
-  type: string
-
-  user?: UserObject
-  page?: Reference
-  database?: Reference
-  date?: DateProperty
-  link_preview?: LinkPreview
+type Mention = {
+  type: 'database'
+  database: Reference
+} | {
+  type: 'date',
+  date: DateProperty
+} | {
+  type: 'user',
+  user: UserObject
+} | {
+  type: 'link_preview',
+  link_preview: LinkPreview
+} | {
+  type: 'page',
+  page: Reference
+} | {
+  type: 'template_mention'
+  template_mention: TemplateMension
 }
 
 interface Reference {
@@ -117,6 +133,14 @@ interface DateProperty {
 
 interface LinkPreview {
   url: string
+}
+
+type TemplateMension = {
+  type: 'template_mention_date',
+  template_mention_date: 'today' | 'now'
+} | {
+  type: 'template_mention_user',
+  template_mention_user: 'me'
 }
 
 interface Equation {

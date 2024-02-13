@@ -17,9 +17,7 @@ import type {
   Post,
   Block,
   Paragraph,
-  Heading1,
-  Heading2,
-  Heading3,
+  Heading,
   BulletedListItem,
   NumberedListItem,
   ToDo,
@@ -510,7 +508,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
         Paragraph
       }
     case 'heading_1':
-      const heading1: Heading1 = {
+      const heading1: Heading = {
         RichTexts: blockObject.heading_1.rich_text.map(_buildRichText),
         Color: blockObject.heading_1.color,
         IsToggleable: blockObject.heading_1.is_toggleable,
@@ -521,7 +519,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
         Heading1: heading1
       }
     case 'heading_2':
-      const heading2: Heading2 = {
+      const heading2: Heading = {
         RichTexts: blockObject.heading_2.rich_text.map(_buildRichText),
         Color: blockObject.heading_2.color,
         IsToggleable: blockObject.heading_2.is_toggleable,
@@ -532,7 +530,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
         Heading2: heading2
       }
     case 'heading_3':
-      const heading3: Heading3 = {
+      const heading3: Heading = {
         RichTexts: blockObject.heading_3.rich_text.map(_buildRichText),
         Color: blockObject.heading_3.color,
         IsToggleable: blockObject.heading_3.is_toggleable,
@@ -785,13 +783,19 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
         TableOfContents: tableOfContents
       }
     case 'link_to_page':
+      if (blockObject.link_to_page.page_id) {
+        return {
+          ...block,
+          Type: 'link_to_page',
+          LinkToPage: {
+            Type: blockObject.link_to_page.type,
+            PageId: blockObject.link_to_page.page_id
+          }
+        }
+      }
       return {
         ...block,
-        Type: 'link_to_page',
-        LinkToPage: blockObject.link_to_page.page_id ? {
-          Type: blockObject.link_to_page.type,
-          PageId: blockObject.link_to_page.page_id
-        } : undefined
+        Type: 'unsupported'
       }
     default:
       return {

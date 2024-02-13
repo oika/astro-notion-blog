@@ -2,12 +2,10 @@ import fetch from 'node-fetch'
 import { BASE_PATH, REQUEST_TIMEOUT_MS } from '../server-constants'
 import type {
   Block,
-  Heading1,
-  Heading2,
-  Heading3,
   RichText,
   Column,
   BlockType,
+  Heading,
 } from './interfaces'
 import { pathJoin } from './utils'
 
@@ -169,7 +167,7 @@ export const getDateStr = (date: string) => {
   return y + '-' + m + '-' + d
 }
 
-export const buildHeadingId = (heading: Heading1 | Heading2 | Heading3) => {
+export const buildHeadingId = (heading: Heading) => {
   return heading.RichTexts.map((richText: RichText) => {
     if (!richText.Text) {
       return ''

@@ -29,94 +29,100 @@ import Toggle from './notion-blocks/Toggle.astro'
 import File from './notion-blocks/File.astro'
 import LinkToPage from './notion-blocks/LinkToPage.astro'
 
-export interface Props {
+type Props = {
   blocks: interfaces.Block[]
-  isRoot: boolean
-  level: number
-  headings: interfaces.Block[]
+  isRoot?: undefined
+  level?: number
+  headings: interfaces.HeadingBlock[]
+} | {
+  blocks: interfaces.Block[]
+  isRoot: true,
+  level?: undefined,
+  headings?: undefined
 }
 
 const {
   blocks: rawBlocks,
-  isRoot = false,
-  level = 1,
-  headings: rawHeadings = [],
-} = Astro.props
+  isRoot,
+  level,
+  headings: rawHeadings,
+} = {
+  ...Astro.props,
+  level: Astro.props.level ?? 1,
+  headings: Astro.props.headings ?? []
+}
 
-const blocks = rawBlocks.reduce((arr, block: interfaces.Block, i: number) => {
-  const isBulletedListItem = block.Type === 'bulleted_list_item'
-  const isNumberedListItem = block.Type === 'numbered_list_item'
-  const isToDo = block.Type === 'to_do'
+const blocks: Array<interfaces.Block | interfaces.List> = rawBlocks.reduce((arr, block: interfaces.Block, i: number) => {
+  const prevList = i === 0 ? undefined : arr[arr.length - 1]
 
-  if (!isBulletedListItem && !isNumberedListItem && !isToDo) {
-    return arr.concat(block)
-  }
-
-  let listType = ''
-  if (isBulletedListItem) {
-    listType = 'bulleted_list'
-  } else if (isNumberedListItem) {
-    listType = 'numbered_list'
-  } else {
-    listType = 'to_do_list'
-  }
-
-  if (i === 0) {
-    const list: interfaces.List = {
-      Type: listType,
-      ListItems: [block],
+  if (block.Type === 'bulleted_list_item') {
+    if (prevList?.Type !== 'bulleted_list') {
+      return arr.concat({
+        Type: 'bulleted_list',
+        ListItems: [block]
+      })
     }
-    return arr.concat(list)
+    prevList.ListItems.push(block)
+    return arr
   }
-
-  const prevList = arr[arr.length - 1]
-
-  if (
-    (isBulletedListItem && prevList.Type !== 'bulleted_list') ||
-    (isNumberedListItem && prevList.Type !== 'numbered_list') ||
-    (isToDo && prevList.Type !== 'to_do_list')
-  ) {
-    const list: interfaces.List = {
-      Type: listType,
-      ListItems: [block],
+  
+  if (block.Type === 'numbered_list_item') {
+    if (prevList?.Type !== 'numbered_list') {
+      return arr.concat({
+        Type: 'numbered_list',
+        ListItems: [block]
+      })
     }
-    return arr.concat(list)
+    prevList.ListItems.push(block)
+    return arr
   }
+  
+  if (block.Type === 'to_do') {
+    if (prevList?.Type !== 'to_do_list') {
+      return arr.concat({
+        Type: 'to_do_list',
+        ListItems: [block]
+      })
+    }
+    prevList.ListItems.push(block)
+    return arr
+  }
+  
+  return arr.concat(block)
 
-  prevList.ListItems.push(block)
-
-  return arr
-}, [])
+}, [] as Array<interfaces.Block | interfaces.List>)
 
 let headings = rawHeadings
 if (isRoot) {
-  headings = blocks.filter((b: interfaces.Block) =>
-    ['heading_1', 'heading_2', 'heading_3'].includes(b.Type)
-  )
+  const isHeading = (block: interfaces.Block | interfaces.List): block is interfaces.HeadingBlock => {
+    return block.Type === 'heading_1'
+      || block.Type === 'heading_2'
+      || block.Type === 'heading_3'
+  }
+
+  headings = blocks.filter(isHeading)
 }
 
-const bookmarkURLs = blocks
-  .filter((b: interfaces.Block) =>
-    ['bookmark', 'link_preview', 'embed'].includes(b.Type)
-  )
-  .map((b: interfaces.Block) => {
-    const urlString = (b.Bookmark || b.LinkPreview || b.Embed).Url
-
-    let url: URL
-    try {
-      url = new URL(urlString)
-    } catch (err) {
-      console.log(err)
-    }
-    return url
-  })
-  .filter((url: URL) => url && !isTweetURL(url) && !isAmazonURL(url))
+const bookmarkURLs: URL[] = blocks.map(b => {
+  if (b.Type === 'bookmark') {
+    return b.Bookmark.Url
+  }
+  if (b.Type === 'link_preview') {
+    return b.LinkPreview.Url
+  }
+  if (b.Type === 'embed') {
+    return b.Embed.Url
+  }
+  return undefined
+}
+  ).map(urlString => urlString ? new URL(urlString) : undefined)
+    .filter((url): url is URL => url != null && !isTweetURL(url) && !isAmazonURL(url))
 
 const bookmarkURLMap = await buildURLToHTMLMap(bookmarkURLs)
 ---
 
 {
-  blocks.map((block: interfaces.Block) => {
+  blocks.map(block => {
     switch (block.Type) {
       case 'paragraph':
         return <Paragraph block={block} headings={headings} />
