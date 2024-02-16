@@ -33,10 +33,10 @@ import { Icon } from 'astro-icon'
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    function handleKeydown(event) {
+    function handleKeydown(event: KeyboardEvent) {
       if (event.keyCode === 75 && event.metaKey) {
         // Ctrl+K or Cmd+K
-        document.querySelector('.open-search-modal').click()
+        (document.querySelector('.open-search-modal') as HTMLElement)?.click()
       }
     }
 

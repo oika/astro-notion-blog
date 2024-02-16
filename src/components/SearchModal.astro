@@ -101,13 +101,20 @@
 </style>
 
 <script>
+  interface FeedItem {
+    title: string | null
+    link: string | null
+    description: string | null
+    pubDate: string | null
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
-    let feedItems = []
+    let feedItems: FeedItem[] = []
     let fetched = false
 
     async function openModal() {
-      document.querySelector('.search-modal-container').style.display = 'block'
-      document.querySelector('.search-prompt input').focus()
+      document.querySelector<HTMLElement>('.search-modal-container')!.style.display = 'block'
+      document.querySelector<HTMLElement>('.search-prompt input')?.focus()
 
       if (!fetched) {
         await fetchRSS()
@@ -116,10 +123,10 @@
     }
 
     function closeModal() {
-      document.querySelector('.search-modal-container').style.display = 'none'
+      document.querySelector<HTMLElement>('.search-modal-container')!.style.display = 'none'
     }
 
-    function handleKeydown(event) {
+    function handleKeydown(event: KeyboardEvent) {
       if (event.keyCode === 13) {
         // Enter
         select()
@@ -138,8 +145,8 @@
     }
 
     function select() {
-      const a = document.querySelector('.search-result ul > li.selected a')
-      a.click()
+      const a = document.querySelector<HTMLElement>('.search-result ul > li.selected a')
+      a?.click()
     }
 
     function selectFirst() {
@@ -149,10 +156,10 @@
       }
     }
 
-    function selectUp(event) {
+    function selectUp(event: KeyboardEvent) {
       event.preventDefault()
 
-      const ul = document.querySelector('.search-result ul')
+      const ul = document.querySelector<HTMLElement>('.search-result ul')!
       const selected = ul.querySelector('.selected')
       if (selected) {
         selected.classList.remove('selected')
@@ -160,17 +167,17 @@
         if (selected.previousElementSibling) {
           selected.previousElementSibling.classList.add('selected')
         } else {
-          ul.lastElementChild.classList.add('selected')
+          ul.lastElementChild?.classList.add('selected')
         }
       } else {
-        ul.lastElementChild.classList.add('selected')
+        ul.lastElementChild?.classList.add('selected')
       }
     }
 
-    function selectDown(event) {
+    function selectDown(event: KeyboardEvent) {
       event.preventDefault()
 
-      const ul = document.querySelector('.search-result ul')
+      const ul = document.querySelector('.search-result ul')!
       const selected = ul.querySelector('.selected')
       if (selected) {
         selected.classList.remove('selected')
@@ -178,22 +185,23 @@
         if (selected.nextElementSibling) {
           selected.nextElementSibling.classList.add('selected')
         } else {
-          ul.firstElementChild.classList.add('selected')
+          ul.firstElementChild?.classList.add('selected')
         }
       } else {
-        ul.firstElementChild.classList.add('selected')
+        ul.firstElementChild?.classList.add('selected')
       }
     }
 
-    function handleMouseover(event) {
-      Array.from(event.target.closest('ul').children).forEach((element) => {
+    function handleMouseover(event: MouseEvent) {
+      const target = event.target as HTMLElement
+      Array.from(target.closest('ul')?.children ?? []).forEach((element) => {
         element.classList.remove('selected')
       })
-      event.target.closest('li').classList.add('selected')
+      target.closest('li')?.classList.add('selected')
     }
 
     function searchAndRender() {
-      const text = document.querySelector('.search-prompt input').value.trim()
+      const text = document.querySelector<HTMLInputElement>('.search-prompt input')?.value.trim() ?? ''
 
       if (text !== '') {
         const results = search(text)
@@ -205,18 +213,18 @@
       selectFirst()
     }
 
-    function search(query) {
-      const results = []
+    function search(query: string) {
+      const results: FeedItem[] = []
       feedItems.forEach((item) => {
-        if (item.title.includes(query) || item?.description?.includes(query)) {
+        if (item.title?.includes(query) || item?.description?.includes(query)) {
           results.push(item)
         }
       })
       return results
     }
 
-    function renderResults(results) {
-      const ul = document.querySelector('.search-result ul')
+    function renderResults(results: FeedItem[]) {
+      const ul = document.querySelector<HTMLElement>('.search-result ul')!
       ul.innerHTML = ''
 
       results.forEach((item) => {
@@ -229,7 +237,7 @@
         title.textContent = item.title
         description.classList.add('search-result-description')
         description.textContent = item.description
-        a.href = item.link
+        a.href = item.link ?? ''
 
         li.addEventListener('mouseover', handleMouseover)
 
