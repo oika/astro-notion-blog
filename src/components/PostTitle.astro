@@ -4,7 +4,7 @@ import { getPostLink } from '../lib/blog-helpers.ts'
 
 export interface Props {
   post: Post
-  enableLink: boolean
+  enableLink?: boolean
 }
 
 const { post, enableLink = true } = Astro.props

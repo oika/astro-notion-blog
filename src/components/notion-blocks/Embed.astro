@@ -15,13 +15,13 @@ import PinterestEmbed from './PinterestEmbed.astro'
 import CodePenEmbed from './CodePenEmbed.astro'
 
 export interface Props {
-  block: interfaces.Block
+  block: interfaces.EmbedBlock
   urlMap: { [key: string]: string }
 }
 
 const { block, urlMap } = Astro.props
 
-let url: URL
+let url: URL | undefined = undefined
 try {
   url = new URL(block.Embed.Url)
 } catch (err) {

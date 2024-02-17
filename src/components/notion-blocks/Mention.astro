@@ -11,7 +11,7 @@ export interface Props {
 
 const { pageId } = Astro.props
 
-let post: Post = null
+let post: Post | null = null
 if (pageId) {
   post = await getPostByPageId(pageId)
 }

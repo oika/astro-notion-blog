@@ -16,8 +16,7 @@ export interface RetrieveDatabaseResponse extends DatabaseObject {}
 
 // Retrieve a block response
 // https://developers.notion.com/reference/retrieve-a-block
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RetrieveBlockResponse extends BlockObject {}
+export type RetrieveBlockResponse = BlockObject
 
 // Retrieve block children response
 // https://developers.notion.com/reference/get-block-children
@@ -32,15 +31,16 @@ export interface RetrieveBlockChildrenResponse {
 
 // common interfaces
 interface UserObject {
-  object: string
+  object: 'user'
   id: string
 }
 
-interface FileObject {
-  type: string
-  name?: string
-  external?: External
-  file?: File
+type FileObject = {
+  type: 'file'
+  file: File
+} | {
+  type: 'external'
+  external: External
 }
 
 interface File {
@@ -53,26 +53,34 @@ interface External {
 }
 
 export interface Emoji {
-  type: string
+  type: 'emoji'
   emoji: string
 }
 
-interface Parent {
-  type: string
-  database_id?: string
-  page_id?: string
+type Parent = {
+  type: 'database_id'
+  database_id: string
+} | {
+  type: 'page_id'
+  page_id: string
 }
 
-export interface RichTextObject {
-  type: string
+export type RichTextObject = {
   plain_text: string
   annotations: Annotations
   href?: string
-
-  text?: Text
-  mention?: Mention
-  equation?: Equation
-}
+} & (
+  {
+    type: 'text'
+    text: Text
+  } | {
+    type: 'mention'
+    mention: Mention
+  } | {
+    type: 'equation'
+    equation: Equation
+  }
+)
 
 interface Annotations {
   bold: boolean
@@ -93,14 +101,24 @@ interface Link {
   url: string
 }
 
-interface Mention {
-  type: string
-
-  user?: UserObject
-  page?: Reference
-  database?: Reference
-  date?: DateProperty
-  link_preview?: LinkPreview
+type Mention = {
+  type: 'database'
+  database: Reference
+} | {
+  type: 'date',
+  date: DateProperty
+} | {
+  type: 'user',
+  user: UserObject
+} | {
+  type: 'link_preview',
+  link_preview: LinkPreview
+} | {
+  type: 'page',
+  page: Reference
+} | {
+  type: 'template_mention'
+  template_mention: TemplateMension
 }
 
 interface Reference {
@@ -115,6 +133,14 @@ interface DateProperty {
 
 interface LinkPreview {
   url: string
+}
+
+type TemplateMension = {
+  type: 'template_mention_date',
+  template_mention_date: 'today' | 'now'
+} | {
+  type: 'template_mention_user',
+  template_mention_user: 'me'
 }
 
 interface Equation {
@@ -231,7 +257,7 @@ interface RollupConfiguration {
 // Page object
 // https://developers.notion.com/reference/page
 export interface PageObject {
-  object: string
+  object: 'page'
   id: string
   created_time: string
   created_by: UserObject
@@ -312,48 +338,176 @@ interface RollupProperty {
 
 // Block object
 // https://developers.notion.com/reference/block
-export interface BlockObject {
-  object: string
+interface BlockObjectBase {
+  object: 'block'
   id: string
   created_time: string
   created_by: UserObject
   last_edited_by: UserObject
   has_children: boolean
   archived: boolean
-  type: string
-
-  paragraph?: Paragraph
-  heading_1?: Heading
-  heading_2?: Heading
-  heading_3?: Heading
-  callout?: Callout
-  quote?: Quote
-  bulleted_list_item?: ListItem
-  numbered_list_item?: ListItem
-  to_do?: ToDo
-  toggle?: Toggle
-  code?: Code
-  child_page?: ChildPage
-  child_database?: ChildDatabase
-  embed?: Embed
-  image?: FileBlock
-  video?: FileBlock
-  file?: FileBlock
-  pdf?: FileBlock
-  bookmark?: Bookmark
-  equation?: Equation
-  divider?: Record<string, never>
-  table_of_contents?: TableOfContents
-  breadcrumb?: Record<string, never>
-  column_list?: Record<string, never>
-  column?: Record<string, never>
-  link_preview?: LinkPreview
-  template?: Template
-  link_to_page?: LinkToPage
-  synced_block?: SyncedBlock
-  table?: Table
-  table_row?: TableRow
 }
+interface BookmarkBlockObject extends BlockObjectBase {
+  type: 'bookmark'
+  bookmark: Bookmark
+}
+interface BreadcrumbBlockObject extends BlockObjectBase {
+  type: 'breadcrumb'
+  breadcrumb: Record<string, never>
+}
+interface BulletedListItemBlockObject extends BlockObjectBase {
+  type: 'bulleted_list_item'
+  bulleted_list_item: ListItem
+}
+interface CalloutBlockObject extends BlockObjectBase {
+  type: 'callout'
+  callout: Callout
+}
+interface ChildDatabaseBlockObject extends BlockObjectBase {
+  type: 'child_database'
+  child_database: ChildDatabase
+}
+interface ChildPageBlockObject extends BlockObjectBase {
+  type: 'child_page'
+  child_page: ChildPage
+}
+interface CodeBlockObject extends BlockObjectBase {
+  type: 'code'
+  code: Code
+}
+interface ColumnBlockObject extends BlockObjectBase {
+  type: 'column'
+  column: Record<string, never>
+}
+interface ColumnListBlockObject extends BlockObjectBase {
+  type: 'column_list'
+  column_list: Record<string, never>
+}
+interface DividerBlockObject extends BlockObjectBase {
+  type: 'divider'
+  divider: Record<string, never>
+}
+interface EmbedBlockObject extends BlockObjectBase {
+  type: 'embed'
+  embed: Embed
+}
+interface EquationBlockObject extends BlockObjectBase {
+  type: 'equation'
+  equation: Equation
+}
+interface FileBlockObject extends BlockObjectBase {
+  type: 'file'
+  file: FileBlock
+}
+interface Heading1BlockObject extends BlockObjectBase {
+  type: 'heading_1'
+  heading_1: Heading
+}
+interface Heading2BlockObject extends BlockObjectBase {
+  type: 'heading_2'
+  heading_2: Heading
+}
+interface Heading3BlockObject extends BlockObjectBase {
+  type: 'heading_3'
+  heading_3: Heading
+}
+interface ImageBlockObject extends BlockObjectBase {
+  type: 'image'
+  image: FileBlock
+}
+interface LinkPreviewBlockObject extends BlockObjectBase {
+  type: 'link_preview'
+  link_preview: LinkPreview
+}
+interface LinkToPageBlockObject extends BlockObjectBase {
+  type: 'link_to_page'
+  link_to_page: LinkToPage
+}
+interface NumberedListItemBlockObject extends BlockObjectBase {
+  type: 'numbered_list_item'
+  numbered_list_item: ListItem
+}
+interface ParagraphBlockObject extends BlockObjectBase {
+  type: 'paragraph'
+  paragraph: Paragraph
+}
+interface PdfBlockObject extends BlockObjectBase {
+  type: 'pdf'
+  pdf: FileBlock
+}
+interface QuoteBlockObject extends BlockObjectBase {
+  type: 'quote'
+  quote: Quote
+}
+interface SyncedBlockBlockObject extends BlockObjectBase {
+  type: 'synced_block'
+  synced_block: SyncedBlock
+}
+interface TableBlockObject extends BlockObjectBase {
+  type: 'table'
+  table: Table
+}
+interface TableOfContentsBlockObject extends BlockObjectBase {
+  type: 'table_of_contents'
+  table_of_contents: TableOfContents
+}
+interface TableRowBlockObject extends BlockObjectBase {
+  type: 'table_row'
+  table_row: TableRow
+}
+interface TemplateBlockObject extends BlockObjectBase {
+  type: 'template'
+  template: Template
+}
+interface ToDoBlockObject extends BlockObjectBase {
+  type: 'to_do'
+  to_do: ToDo
+}
+interface ToggleBlockObject extends BlockObjectBase {
+  type: 'toggle'
+  toggle: Toggle
+}
+interface UnsupportedBlockObject extends BlockObjectBase {
+  type: 'unsupported'
+}
+interface VideoBlockObject extends BlockObjectBase {
+  type: 'video'
+  video: FileBlock
+}
+
+export type BlockObject =
+  BookmarkBlockObject
+  | BreadcrumbBlockObject
+  | BulletedListItemBlockObject
+  | CalloutBlockObject
+  | ChildDatabaseBlockObject
+  | ChildPageBlockObject
+  | CodeBlockObject
+  | ColumnBlockObject
+  | ColumnListBlockObject
+  | DividerBlockObject
+  | EmbedBlockObject
+  | EquationBlockObject
+  | FileBlockObject
+  | Heading1BlockObject
+  | Heading2BlockObject
+  | Heading3BlockObject
+  | ImageBlockObject
+  | LinkPreviewBlockObject
+  | LinkToPageBlockObject
+  | NumberedListItemBlockObject
+  | ParagraphBlockObject
+  | PdfBlockObject
+  | QuoteBlockObject
+  | SyncedBlockBlockObject
+  | TableBlockObject
+  | TableOfContentsBlockObject
+  | TableRowBlockObject
+  | TemplateBlockObject
+  | ToDoBlockObject
+  | ToggleBlockObject
+  | UnsupportedBlockObject
+  | VideoBlockObject
 
 interface Paragraph {
   rich_text: RichTextObject[]
@@ -417,7 +571,7 @@ interface Embed {
   url: string
 }
 
-interface FileBlock extends FileObject {
+type FileBlock = FileObject & {
   caption?: RichTextObject[]
 }
 

@@ -1,5 +1,4 @@
 import type { AstroIntegration } from 'astro'
-import type { FileObject } from '../lib/interfaces'
 import { getDatabase, downloadFile } from '../lib/notion/client'
 
 export default (): AstroIntegration => ({
@@ -12,9 +11,9 @@ export default (): AstroIntegration => ({
         return Promise.resolve()
       }
 
-      const icon = database.Icon as FileObject
+      const icon = database.Icon
 
-      let url!: URL
+      let url: URL
       try {
         url = new URL(icon.Url)
       } catch (err) {

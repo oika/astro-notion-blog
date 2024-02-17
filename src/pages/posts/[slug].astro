@@ -26,6 +26,7 @@ import BlogPostsLink from '../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../components/BlogTagsLink.astro'
 import styles from '../../styles/blog.module.css'
 import { HEADING } from '../../content-constants'
+import { FileBlock, ImageBlock } from '../../lib/interfaces.ts'
 
 export async function getStaticPaths() {
   const posts = await getAllPosts()
@@ -49,21 +50,24 @@ const [blocks, allPosts, rankedPosts, recentPosts, tags, postsHavingSameTag] =
     getPostsByTag(post.Tags[0]?.name, 6),
   ])
 
-const fileAtacchedBlocks = extractTargetBlocks('image', blocks)
+const fileAtacchedBlocks: Array<ImageBlock | FileBlock> = extractTargetBlocks('image', blocks)
   .concat(extractTargetBlocks('file', blocks))
-  .filter((block) => {
+  .filter((block): block is ImageBlock | FileBlock => {
     if (!block) {
       return false
     }
-    const imageOrFile = block.Image || block.File
-    return imageOrFile && imageOrFile.File && imageOrFile.File.Url
+    const imageOrFile = block.Type === 'image' ? block.Image
+      : block.Type === 'file' ? block.File
+      : undefined
+    return (imageOrFile?.File?.Url ?? '') !== ''
   })
 
 // Download files
 await Promise.all(
   fileAtacchedBlocks
     .map(async (block) => {
-      const expiryTime = (block.Image || block.File).File.ExpiryTime
+      const file = block.Type === 'image' ? block.Image.File : block.File.File
+      const expiryTime = file!.ExpiryTime
       if (Date.parse(expiryTime) > Date.now()) {
         return Promise.resolve(block)
       }
@@ -73,7 +77,10 @@ await Promise.all(
       promise.then((block) => {
         let url!: URL
         try {
-          url = new URL((block.Image || block.File).File.Url)
+          const file = block.Type === 'image' ? block.Image.File
+            : block.Type === 'file' ? block.File.File
+            : undefined
+          url = new URL(file?.Url ?? '')
         } catch (err) {
           console.log('Invalid file URL')
           return Promise.reject()
@@ -90,7 +97,7 @@ const nextPost = allPosts[currentPostIndex - 1]
 
 let ogImage = ''
 if (post.FeaturedImage && post.FeaturedImage.Url) {
-  ogImage = new URL(filePath(new URL(post.FeaturedImage.Url)), Astro.site)
+  ogImage = new URL(filePath(new URL(post.FeaturedImage.Url)), Astro.site).href
 }
 ---
 

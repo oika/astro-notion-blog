@@ -5,8 +5,8 @@ import RichText from './RichText.astro'
 import NotionBlocks from '../NotionBlocks.astro'
 
 export interface Props {
-  block: interfaces.Block
-  headings: interfaces.Block[]
+  block: interfaces.CalloutBlock
+  headings: interfaces.HeadingBlock[]
 }
 
 const { block, headings } = Astro.props
