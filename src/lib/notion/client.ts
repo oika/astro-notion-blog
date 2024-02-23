@@ -124,7 +124,7 @@ export async function getAllPosts(): Promise<Post[]> {
       break
     }
 
-    params['start_cursor'] = res.next_cursor as string
+    params['start_cursor'] = res.next_cursor
   }
 
   postsCache = results
@@ -265,7 +265,7 @@ export async function getAllBlocksByBlockId(blockId: string): Promise<Block[]> {
         break
       }
 
-      params['start_cursor'] = res.next_cursor as string
+      params['start_cursor'] = res.next_cursor
     }
   }
 
@@ -842,7 +842,7 @@ async function _getTableRows(blockId: string): Promise<TableRow[]> {
         break
       }
 
-      params['start_cursor'] = res.next_cursor as string
+      params['start_cursor'] = res.next_cursor
     }
   }
 
@@ -907,7 +907,7 @@ async function _getColumns(blockId: string): Promise<Column[]> {
         break
       }
 
-      params['start_cursor'] = res.next_cursor as string
+      params['start_cursor'] = res.next_cursor
     }
   }
 
