@@ -1,13 +1,19 @@
+type NextCursorResponsePart = {
+  has_more: false
+  next_cursor: null
+} | {
+  has_more: true
+  next_cursor: string
+}
+
 // Query a database response
 // https://developers.notion.com/reference/post-database-query
-export interface QueryDatabaseResponse {
+export type QueryDatabaseResponse = {
   object: string
   results: PageObject[]
-  next_cursor: null | string
-  has_more: boolean
   type: string
   page?: Record<string, never>
-}
+} & NextCursorResponsePart
 
 // Retrieve a database response
 // https://developers.notion.com/reference/retrieve-a-database
@@ -20,14 +26,12 @@ export type RetrieveBlockResponse = BlockObject
 
 // Retrieve block children response
 // https://developers.notion.com/reference/get-block-children
-export interface RetrieveBlockChildrenResponse {
+export type RetrieveBlockChildrenResponse = {
   object: string
   results: BlockObject[]
-  next_cursor: null | string
-  has_more: boolean
   type: string
   block?: Record<string, never>
-}
+} & NextCursorResponsePart
 
 // common interfaces
 interface UserObject {
