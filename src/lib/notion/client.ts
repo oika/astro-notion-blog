@@ -102,7 +102,7 @@ export async function getAllPosts(): Promise<Post[]> {
       async (bail) => {
         try {
           return (await client.databases.query(
-            params as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            params
           )) as responses.QueryDatabaseResponse
         } catch (error: unknown) {
           if (error instanceof APIResponseError) {
