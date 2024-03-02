@@ -54,9 +54,16 @@ import type {
 } from '../interfaces'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Client, APIResponseError } from '@notionhq/client'
+import AsyncLock from 'async-lock'
 
 const client = new Client({
   auth: NOTION_API_SECRET,
+})
+
+const asyncLock = new AsyncLock({
+  timeout: 60000,
+  maxOccupationTime: 60000,
+  maxPending: 100
 })
 
 let postsCache: Post[] | null = null
@@ -65,6 +72,10 @@ let dbCache: Database | null = null
 const numberOfRetry = 2
 
 export async function getAllPosts(): Promise<Post[]> {
+  return await asyncLock.acquire('getAllPosts', getAllPostsCore)
+}
+
+async function getAllPostsCore(): Promise<Post[]> {
   if (postsCache !== null) {
     return Promise.resolve(postsCache)
   }
