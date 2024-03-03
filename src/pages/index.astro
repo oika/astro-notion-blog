@@ -18,7 +18,7 @@ import Pagination from '../components/Pagination.astro'
 import BlogPostsLink from '../components/BlogPostsLink.astro'
 import BlogTagsLink from '../components/BlogTagsLink.astro'
 import styles from '../styles/blog.module.css'
-import { HEADING } from '../content-constants'
+import { HEADING, Language } from '../content-constants'
 
 const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
   getPosts(NUMBER_OF_POSTS_PER_PAGE),
@@ -26,6 +26,8 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
   getAllTags(),
   getNumberOfPages(),
 ])
+
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <Layout>
@@ -53,7 +55,7 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
   </div>
 
   <div slot="aside" class={styles.aside}>
-    <BlogPostsLink heading={HEADING.RECOMMENDED} posts={rankedPosts} />
-    <BlogTagsLink heading={HEADING.CATEGORIES} tags={tags} />
+    <BlogPostsLink heading={HEADING[lang].RECOMMENDED} posts={rankedPosts} />
+    <BlogTagsLink heading={HEADING[lang].CATEGORIES} tags={tags} />
   </div>
 </Layout>

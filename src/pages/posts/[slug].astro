@@ -25,7 +25,7 @@ import PostRelativeLink from '../../components/PostRelativeLink.astro'
 import BlogPostsLink from '../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../components/BlogTagsLink.astro'
 import styles from '../../styles/blog.module.css'
-import { HEADING } from '../../content-constants'
+import { HEADING, Language } from '../../content-constants'
 import { FileBlock, ImageBlock } from '../../lib/interfaces.ts'
 
 export async function getStaticPaths() {
@@ -99,6 +99,8 @@ let ogImage = ''
 if (post.FeaturedImage && post.FeaturedImage.Url) {
   ogImage = new URL(filePath(new URL(post.FeaturedImage.Url)), Astro.site).href
 }
+
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <Layout
@@ -123,13 +125,13 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 
   <div slot="aside" class="aside">
     <BlogPostsLink
-      heading={HEADING.SAME_CATEGORY}
+      heading={HEADING[lang].SAME_CATEGORY}
       posts={postsHavingSameTag.filter(
         (p: interfaces.Post) => p.Slug !== post.Slug
       )}
     />
-    <BlogPostsLink heading={HEADING.RECOMMENDED} posts={rankedPosts} />
-    <BlogPostsLink heading={HEADING.RECENT} posts={recentPosts} />
-    <BlogTagsLink heading={HEADING.CATEGORIES} tags={tags} />
+    <BlogPostsLink heading={HEADING[lang].RECOMMENDED} posts={rankedPosts} />
+    <BlogPostsLink heading={HEADING[lang].RECENT} posts={recentPosts} />
+    <BlogTagsLink heading={HEADING[lang].CATEGORIES} tags={tags} />
   </div>
 </Layout>
