@@ -2,6 +2,7 @@
 import type { Post, SelectProperty } from '../lib/interfaces.ts'
 import { getTagLink } from '../lib/blog-helpers.ts'
 import '../styles/notion-color.css'
+import { Language } from '../content-constants'
 
 export interface Props {
   post: Post
@@ -9,6 +10,7 @@ export interface Props {
 }
 
 const { post, enableLink = true } = Astro.props
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <div class="post-tags">
@@ -18,7 +20,7 @@ const { post, enableLink = true } = Astro.props
       post.Tags.map((tag: SelectProperty) => {
         if (enableLink) {
           return (
-            <a href={getTagLink(tag.name)} class={`tag ${tag.color}`}>
+            <a href={getTagLink(lang, tag.name)} class={`tag ${tag.color}`}>
               {tag.name}
             </a>
           )

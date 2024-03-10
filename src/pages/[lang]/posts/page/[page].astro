@@ -17,7 +17,7 @@ import Pagination from '../../../../components/Pagination.astro'
 import BlogPostsLink from '../../../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../../../components/BlogTagsLink.astro'
 import styles from '../../../../styles/blog.module.css'
-import { HEADING, LANGUAGE_KEYS, Language, LanguageKey } from '../../../../content-constants'
+import { HEADING, LANGUAGE_KEYS, LanguageKey } from '../../../../content-constants'
 
 export async function getStaticPaths() {
   const numberOfPages = await getNumberOfPages()

@@ -25,7 +25,7 @@ import PostRelativeLink from '../../../components/PostRelativeLink.astro'
 import BlogPostsLink from '../../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../../components/BlogTagsLink.astro'
 import styles from '../../../styles/blog.module.css'
-import { HEADING, LANGUAGE_KEYS, Language } from '../../../content-constants'
+import { HEADING, LANGUAGE_KEYS } from '../../../content-constants'
 import { FileBlock, ImageBlock } from '../../../lib/interfaces'
 
 export async function getStaticPaths() {
@@ -110,7 +110,7 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 <Layout
   title={post.Title}
   description={post.Excerpt}
-  path={getPostLink(post.Slug)}
+  path={getPostLink(lang, post.Slug)}
   ogImage={ogImage}
 >
   <div slot="main" class={styles.main}>

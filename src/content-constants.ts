@@ -17,6 +17,11 @@ export const Language = {
         }
 
         return currentLocale as LanguageKey
+    },
+    fromUrl: (url: URL) => {
+        const [, langInUrl] = url.pathname.split('/');
+        const lang = LANGUAGE_KEYS.find(l => l.toLowerCase() === langInUrl.toLowerCase())
+        return lang ?? "ja"
     }
 }
 

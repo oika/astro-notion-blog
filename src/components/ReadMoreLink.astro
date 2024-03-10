@@ -1,16 +1,18 @@
 ---
 import { Post } from '../lib/interfaces.ts'
 import { getPostLink } from '../lib/blog-helpers.ts'
+import { Language } from '../content-constants'
 
 export interface Props {
   post: Post
 }
 
 const { post } = Astro.props
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <div class="read-more-link">
-  <a href={getPostLink(post.Slug)}>→Read more</a>
+  <a href={getPostLink(lang, post.Slug)}>→Read more</a>
 </div>
 
 <style>
