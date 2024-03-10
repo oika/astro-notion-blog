@@ -1,5 +1,5 @@
 ---
-import * as interfaces from '../../lib/interfaces.ts'
+import * as interfaces from '../../../lib/interfaces'
 import {
   getPosts,
   getAllPosts,
@@ -10,30 +10,35 @@ import {
   getAllTags,
   getAllBlocksByBlockId,
   downloadFile,
-} from '../../lib/notion/client.ts'
+} from '../../../lib/notion/client'
 import {
   getPostLink,
   filePath,
   extractTargetBlocks,
-} from '../../lib/blog-helpers.ts'
-import Layout from '../../layouts/Layout.astro'
-import PostDate from '../../components/PostDate.astro'
-import PostTags from '../../components/PostTags.astro'
-import PostTitle from '../../components/PostTitle.astro'
-import PostBody from '../../components/PostBody.astro'
-import PostRelativeLink from '../../components/PostRelativeLink.astro'
-import BlogPostsLink from '../../components/BlogPostsLink.astro'
-import BlogTagsLink from '../../components/BlogTagsLink.astro'
-import styles from '../../styles/blog.module.css'
-import { HEADING, Language } from '../../content-constants'
-import { FileBlock, ImageBlock } from '../../lib/interfaces.ts'
+} from '../../../lib/blog-helpers'
+import Layout from '../../../layouts/Layout.astro'
+import PostDate from '../../../components/PostDate.astro'
+import PostTags from '../../../components/PostTags.astro'
+import PostTitle from '../../../components/PostTitle.astro'
+import PostBody from '../../../components/PostBody.astro'
+import PostRelativeLink from '../../../components/PostRelativeLink.astro'
+import BlogPostsLink from '../../../components/BlogPostsLink.astro'
+import BlogTagsLink from '../../../components/BlogTagsLink.astro'
+import styles from '../../../styles/blog.module.css'
+import { HEADING, LANGUAGE_KEYS, Language } from '../../../content-constants'
+import { FileBlock, ImageBlock } from '../../../lib/interfaces'
 
 export async function getStaticPaths() {
   const posts = await getAllPosts()
-  return posts.map((post: interfaces.Post) => ({ params: { slug: post.Slug } }))
+
+  return posts.flatMap((post: interfaces.Post) => {
+    return LANGUAGE_KEYS.map(lang => ({
+      params: { slug: post.Slug, lang }
+    }))
+  })
 }
 
-const { slug } = Astro.params
+const { slug, lang } = Astro.params
 
 const post = await getPostBySlug(slug)
 if (!post) {
@@ -100,7 +105,6 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
   ogImage = new URL(filePath(new URL(post.FeaturedImage.Url)), Astro.site).href
 }
 
-const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <Layout
