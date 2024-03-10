@@ -1,4 +1,4 @@
-import type { AstroGlobal } from "astro";
+import type { APIContext, AstroGlobal } from "astro";
 
 export const LANGUAGE_KEYS = [ "ja", "en" ] as const;
 
@@ -21,6 +21,11 @@ export const Language = {
     fromUrl: (url: URL) => {
         const [, langInUrl] = url.pathname.split('/');
         const lang = LANGUAGE_KEYS.find(l => l.toLowerCase() === langInUrl.toLowerCase())
+        return lang ?? "ja"
+    },
+    fromApiContext: (context: APIContext) => {
+        const langParam = context.params.lang
+        const lang = LANGUAGE_KEYS.find(l => l.toLowerCase() === langParam?.toLowerCase())
         return lang ?? "ja"
     }
 }
