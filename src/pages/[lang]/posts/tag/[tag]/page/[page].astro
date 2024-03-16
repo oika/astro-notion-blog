@@ -19,23 +19,27 @@ import BlogPostsLink from '../../../../../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../../../../../components/BlogTagsLink.astro'
 import styles from '../../../../../../styles/blog.module.css'
 import '../../../../../../styles/notion-color.css'
-import { HEADING, LANGUAGE_KEYS, LanguageKey } from '../../../../../../content-constants'
+import {
+  HEADING,
+  LANGUAGE_KEYS,
+  LanguageKey,
+} from '../../../../../../content-constants'
 
 export async function getStaticPaths() {
-  const allTags = await getAllTags()
+  const paths: { params: { tag: string; page: number; lang: LanguageKey } }[] =
+    []
+  for (const lang of LANGUAGE_KEYS) {
+    const allTags = await getAllTags(lang)
 
-  const paths: { params: { tag: string, page: number, lang: LanguageKey } }[] = []
-
-  await Promise.all(
-    allTags.map(async (tag: SelectProperty) => {
-      const numberOfPages = await getNumberOfPagesByTag(tag.name)
-      for (const lang of LANGUAGE_KEYS) {
+    await Promise.all(
+      allTags.map(async (tag) => {
+        const numberOfPages = await getNumberOfPagesByTag(lang, tag.name)
         for (let page = 2; page <= numberOfPages; page++) {
           paths.push({ params: { tag: tag.name, page, lang } })
         }
-      }
-    })
-  )
+      })
+    )
+  }
 
   return paths
 }
@@ -43,10 +47,10 @@ export async function getStaticPaths() {
 const { tag, page, lang } = Astro.params
 
 const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
-  getPostsByTagAndPage(tag, page),
-  getRankedPosts(),
-  getAllTags(),
-  getNumberOfPagesByTag(tag),
+  getPostsByTagAndPage(lang, tag, page),
+  getRankedPosts(lang),
+  getAllTags(lang),
+  getNumberOfPagesByTag(lang, tag),
 ])
 
 const currentTag = posts[0].Tags.find((t) => t.name === tag)
@@ -82,11 +86,7 @@ const currentTag = posts[0].Tags.find((t) => t.name === tag)
     }
 
     <footer>
-      <Pagination
-        tag={tag}
-        currentPage={page}
-        numberOfPages={numberOfPages}
-      />
+      <Pagination tag={tag} currentPage={page} numberOfPages={numberOfPages} />
     </footer>
   </div>
 

@@ -20,11 +20,11 @@ import styles from '../../../../styles/blog.module.css'
 import { HEADING, LANGUAGE_KEYS, LanguageKey } from '../../../../content-constants'
 
 export async function getStaticPaths() {
-  const numberOfPages = await getNumberOfPages()
-
   const paths: { params: { page: number, lang: LanguageKey }}[] = []
-  for (let page = 2; page <= numberOfPages; page++) {
-    for (const lang of LANGUAGE_KEYS) {
+
+  for (const lang of LANGUAGE_KEYS) {
+    const numberOfPages = await getNumberOfPages(lang)
+    for (let page = 2; page <= numberOfPages; page++) {
         paths.push({ params: { page, lang }})
     }
   }
@@ -34,10 +34,10 @@ export async function getStaticPaths() {
 const { page, lang } = Astro.params
 
 const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
-  getPostsByPage(page),
-  getRankedPosts(),
-  getAllTags(),
-  getNumberOfPages(),
+  getPostsByPage(lang, page),
+  getRankedPosts(lang),
+  getAllTags(lang),
+  getNumberOfPages(lang),
 ])
 
 ---

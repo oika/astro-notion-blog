@@ -20,27 +20,29 @@ import BlogPostsLink from '../../../../components/BlogPostsLink.astro'
 import BlogTagsLink from '../../../../components/BlogTagsLink.astro'
 import styles from '../../../../styles/blog.module.css'
 import '../../../../styles/notion-color.css'
-import { HEADING, LANGUAGE_KEYS } from '../../../../content-constants'
+import {
+  HEADING,
+  LANGUAGE_KEYS,
+  LanguageKey,
+} from '../../../../content-constants'
 
 export async function getStaticPaths() {
-  const allTags = await getAllTags()
-  return allTags.flatMap((tag: SelectProperty) => {
-    return LANGUAGE_KEYS.map(lang => ({
-        params: {
-            tag: tag.name,
-            lang
-        }
-    }))
-  })
+  const paths: { params: { tag: string; lang: LanguageKey } }[] = []
+
+  for (const lang of LANGUAGE_KEYS) {
+    const allTags = await getAllTags(lang)
+    paths.push(...allTags.map((tag) => ({ params: { tag: tag.name, lang } })))
+  }
+  return paths
 }
 
 const { tag, lang } = Astro.params
 
 const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
-  getPostsByTag(tag, NUMBER_OF_POSTS_PER_PAGE),
-  getRankedPosts(),
-  getAllTags(),
-  getNumberOfPagesByTag(tag),
+  getPostsByTag(lang, tag, NUMBER_OF_POSTS_PER_PAGE),
+  getRankedPosts(lang),
+  getAllTags(lang),
+  getNumberOfPagesByTag(lang, tag),
 ])
 
 const currentTag = posts[0].Tags.find((t) => t.name === tag)

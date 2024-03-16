@@ -21,20 +21,19 @@ import styles from '../../styles/blog.module.css'
 import { HEADING, LANGUAGE_KEYS, Language } from '../../content-constants'
 
 export async function getStaticPaths() {
-
-  return LANGUAGE_KEYS.map(lang => {
+  return LANGUAGE_KEYS.map((lang) => {
     return { params: { lang } }
   })
 }
 
-const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
-  getPosts(NUMBER_OF_POSTS_PER_PAGE),
-  getRankedPosts(),
-  getAllTags(),
-  getNumberOfPages(),
-])
+const { lang } = Astro.params
 
-const lang = Language.fromCurrentLocale(Astro)
+const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
+  getPosts(lang, NUMBER_OF_POSTS_PER_PAGE),
+  getRankedPosts(lang),
+  getAllTags(lang),
+  getNumberOfPages(lang),
+])
 ---
 
 <Layout>

@@ -55,6 +55,7 @@ import type {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Client, APIResponseError } from '@notionhq/client'
 import AsyncLock from 'async-lock'
+import { LANGUAGE_KEYS, LanguageKey } from '../../content-constants'
 
 const client = new Client({
   auth: NOTION_API_SECRET,
@@ -63,21 +64,34 @@ const client = new Client({
 const asyncLock = new AsyncLock({
   timeout: 60000,
   maxOccupationTime: 60000,
-  maxPending: 100
+  maxPending: 100,
 })
 
-let postsCache: Post[] | null = null
+const postsCacheByLang = new Map<LanguageKey, Post[]>()
 let dbCache: Database | null = null
 
 const numberOfRetry = 2
 
-export async function getAllPosts(): Promise<Post[]> {
-  return await asyncLock.acquire('getAllPosts', getAllPostsCore)
+export async function getAllPostsOfAllLanguages(): Promise<Post[]> {
+  return await asyncLock.acquire('getAllPosts', getAllPostsOfAllLanguagesCore)
 }
 
-async function getAllPostsCore(): Promise<Post[]> {
-  if (postsCache !== null) {
-    return Promise.resolve(postsCache)
+export async function getAllPosts(lang: LanguageKey): Promise<Post[]> {
+  return await asyncLock.acquire('getAllPosts', () => getAllPostsCore(lang))
+}
+
+async function getAllPostsOfAllLanguagesCore(): Promise<Post[]> {
+  const posts: Post[] = []
+  for (const lang of LANGUAGE_KEYS) {
+    posts.push(...(await getAllPostsCore(lang)))
+  }
+  return posts
+}
+
+async function getAllPostsCore(lang: LanguageKey): Promise<Post[]> {
+  const cache = postsCacheByLang.get(lang)
+  if (cache != null) {
+    return Promise.resolve(cache)
   }
 
   const params: requestParams.QueryDatabase = {
@@ -94,6 +108,12 @@ async function getAllPostsCore(): Promise<Post[]> {
           property: 'Date',
           date: {
             on_or_before: new Date().toISOString(),
+          },
+        },
+        {
+          property: 'Language',
+          multi_select: {
+            contains: lang,
           },
         },
       ],
@@ -138,19 +158,27 @@ async function getAllPostsCore(): Promise<Post[]> {
     params['start_cursor'] = res.next_cursor
   }
 
-  postsCache = results
+  const posts = results
     .filter((pageObject) => _validPageObject(pageObject))
     .map((pageObject) => _buildPost(pageObject))
-  return postsCache
+
+  postsCacheByLang.set(lang, posts)
+  return posts
 }
 
-export async function getPosts(pageSize = 10): Promise<Post[]> {
-  const allPosts = await getAllPosts()
+export async function getPosts(
+  lang: LanguageKey,
+  pageSize = 10
+): Promise<Post[]> {
+  const allPosts = await getAllPosts(lang)
   return allPosts.slice(0, pageSize)
 }
 
-export async function getRankedPosts(pageSize = 10): Promise<Post[]> {
-  const allPosts = await getAllPosts()
+export async function getRankedPosts(
+  lang: LanguageKey,
+  pageSize = 10
+): Promise<Post[]> {
+  const allPosts = await getAllPosts(lang)
   return allPosts
     .filter((post) => !!post.Rank)
     .sort((a, b) => {
@@ -164,35 +192,45 @@ export async function getRankedPosts(pageSize = 10): Promise<Post[]> {
     .slice(0, pageSize)
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
-  const allPosts = await getAllPosts()
+export async function getPostBySlug(
+  lang: LanguageKey,
+  slug: string
+): Promise<Post | null> {
+  const allPosts = await getAllPosts(lang)
   return allPosts.find((post) => post.Slug === slug) || null
 }
 
-export async function getPostByPageId(pageId: string): Promise<Post | null> {
-  const allPosts = await getAllPosts()
+export async function getPostByPageId(
+  lang: LanguageKey,
+  pageId: string
+): Promise<Post | null> {
+  const allPosts = await getAllPosts(lang)
   return allPosts.find((post) => post.PageId === pageId) || null
 }
 
 export async function getPostsByTag(
+  lang: LanguageKey,
   tagName: string,
   pageSize = 10
 ): Promise<Post[]> {
   if (!tagName) return []
 
-  const allPosts = await getAllPosts()
+  const allPosts = await getAllPosts(lang)
   return allPosts
     .filter((post) => post.Tags.find((tag) => tag.name === tagName))
     .slice(0, pageSize)
 }
 
 // page starts from 1 not 0
-export async function getPostsByPage(page: number): Promise<Post[]> {
+export async function getPostsByPage(
+  lang: LanguageKey,
+  page: number
+): Promise<Post[]> {
   if (page < 1) {
     return []
   }
 
-  const allPosts = await getAllPosts()
+  const allPosts = await getAllPosts(lang)
 
   const startIndex = (page - 1) * NUMBER_OF_POSTS_PER_PAGE
   const endIndex = startIndex + NUMBER_OF_POSTS_PER_PAGE
@@ -202,6 +240,7 @@ export async function getPostsByPage(page: number): Promise<Post[]> {
 
 // page starts from 1 not 0
 export async function getPostsByTagAndPage(
+  lang: LanguageKey,
   tagName: string,
   page: number
 ): Promise<Post[]> {
@@ -209,7 +248,7 @@ export async function getPostsByTagAndPage(
     return []
   }
 
-  const allPosts = await getAllPosts()
+  const allPosts = await getAllPosts(lang)
   const posts = allPosts.filter((post) =>
     post.Tags.find((tag) => tag.name === tagName)
   )
@@ -220,16 +259,19 @@ export async function getPostsByTagAndPage(
   return posts.slice(startIndex, endIndex)
 }
 
-export async function getNumberOfPages(): Promise<number> {
-  const allPosts = await getAllPosts()
+export async function getNumberOfPages(lang: LanguageKey): Promise<number> {
+  const allPosts = await getAllPosts(lang)
   return (
     Math.floor(allPosts.length / NUMBER_OF_POSTS_PER_PAGE) +
     (allPosts.length % NUMBER_OF_POSTS_PER_PAGE > 0 ? 1 : 0)
   )
 }
 
-export async function getNumberOfPagesByTag(tagName: string): Promise<number> {
-  const allPosts = await getAllPosts()
+export async function getNumberOfPagesByTag(
+  lang: LanguageKey,
+  tagName: string
+): Promise<number> {
+  const allPosts = await getAllPosts(lang)
   const posts = allPosts.filter((post) =>
     post.Tags.find((tag) => tag.name === tagName)
   )
@@ -369,8 +411,8 @@ export async function getBlock(blockId: string): Promise<Block> {
   return _buildBlock(res)
 }
 
-export async function getAllTags(): Promise<SelectProperty[]> {
-  const allPosts = await getAllPosts()
+export async function getAllTags(lang: LanguageKey): Promise<SelectProperty[]> {
+  const allPosts = await getAllPosts(lang)
 
   const tagNames: string[] = []
   return allPosts
@@ -484,7 +526,10 @@ export async function getDatabase(): Promise<Database> {
   if (res.cover) {
     cover = {
       Type: res.cover.type,
-      Url: (res.cover.type === 'external' ? res.cover.external.url : res.cover.file.url) || '',
+      Url:
+        (res.cover.type === 'external'
+          ? res.cover.external.url
+          : res.cover.file.url) || '',
     }
   }
 
@@ -516,7 +561,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'paragraph',
-        Paragraph
+        Paragraph,
       }
     case 'heading_1':
       const heading1: Heading = {
@@ -527,7 +572,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'heading_1',
-        Heading1: heading1
+        Heading1: heading1,
       }
     case 'heading_2':
       const heading2: Heading = {
@@ -538,7 +583,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'heading_2',
-        Heading2: heading2
+        Heading2: heading2,
       }
     case 'heading_3':
       const heading3: Heading = {
@@ -549,29 +594,27 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'heading_3',
-        Heading3: heading3
+        Heading3: heading3,
       }
     case 'bulleted_list_item':
       const bulletedListItem: BulletedListItem = {
-        RichTexts:
-          blockObject.bulleted_list_item.rich_text.map(_buildRichText),
+        RichTexts: blockObject.bulleted_list_item.rich_text.map(_buildRichText),
         Color: blockObject.bulleted_list_item.color,
       }
       return {
         ...block,
         Type: 'bulleted_list_item',
-        BulletedListItem: bulletedListItem
+        BulletedListItem: bulletedListItem,
       }
     case 'numbered_list_item':
       const numberedListItem: NumberedListItem = {
-        RichTexts:
-          blockObject.numbered_list_item.rich_text.map(_buildRichText),
+        RichTexts: blockObject.numbered_list_item.rich_text.map(_buildRichText),
         Color: blockObject.numbered_list_item.color,
       }
       return {
         ...block,
         Type: 'numbered_list_item',
-        NumberedListItem: numberedListItem
+        NumberedListItem: numberedListItem,
       }
     case 'to_do':
       const toDo: ToDo = {
@@ -582,38 +625,29 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'to_do',
-        ToDo: toDo
+        ToDo: toDo,
       }
     case 'video':
       const video: Video = {
         Caption: blockObject.video.caption?.map(_buildRichText) || [],
         Type: blockObject.video.type,
       }
-      if (
-        blockObject.video.type === 'external' &&
-        blockObject.video.external
-      ) {
+      if (blockObject.video.type === 'external' && blockObject.video.external) {
         video.External = { Url: blockObject.video.external.url }
       }
       return {
         ...block,
         Type: 'video',
-        Video: video
+        Video: video,
       }
     case 'image':
       const image: Image = {
         Caption: blockObject.image.caption?.map(_buildRichText) || [],
         Type: blockObject.image.type,
       }
-      if (
-        blockObject.image.type === 'external' &&
-        blockObject.image.external
-      ) {
+      if (blockObject.image.type === 'external' && blockObject.image.external) {
         image.External = { Url: blockObject.image.external.url }
-      } else if (
-        blockObject.image.type === 'file' &&
-        blockObject.image.file
-      ) {
+      } else if (blockObject.image.type === 'file' && blockObject.image.file) {
         image.File = {
           Type: blockObject.image.type,
           Url: blockObject.image.file.url,
@@ -623,7 +657,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'image',
-        Image: image
+        Image: image,
       }
     case 'file':
       const file: File = {
@@ -642,7 +676,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'file',
-        File: file
+        File: file,
       }
     case 'code':
       const code: Code = {
@@ -653,7 +687,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'code',
-        Code: code
+        Code: code,
       }
     case 'quote':
       const quote: Quote = {
@@ -663,7 +697,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'quote',
-        Quote: quote
+        Quote: quote,
       }
     case 'equation':
       const equation: Equation = {
@@ -672,7 +706,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'equation',
-        Equation: equation
+        Equation: equation,
       }
     case 'callout':
       let icon: FileOrExternalWithUrl | Emoji | null = null
@@ -704,7 +738,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'callout',
-        Callout: callout
+        Callout: callout,
       }
     case 'synced_block':
       let syncedFrom: SyncedFrom | null = null
@@ -723,7 +757,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'synced_block',
-        SyncedBlock: syncedBlock
+        SyncedBlock: syncedBlock,
       }
     case 'toggle':
       const toggle: Toggle = {
@@ -734,7 +768,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'toggle',
-        Toggle: toggle
+        Toggle: toggle,
       }
     case 'embed':
       const embed: Embed = {
@@ -743,7 +777,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'embed',
-        Embed: embed
+        Embed: embed,
       }
     case 'bookmark':
       const bookmark: Bookmark = {
@@ -752,7 +786,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'bookmark',
-        Bookmark: bookmark
+        Bookmark: bookmark,
       }
     case 'link_preview':
       const linkPreview: LinkPreview = {
@@ -761,7 +795,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'link_preview',
-        LinkPreview: linkPreview
+        LinkPreview: linkPreview,
       }
     case 'table':
       const table: Table = {
@@ -773,7 +807,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'table',
-        Table: table
+        Table: table,
       }
     case 'column_list':
       const columnList: ColumnList = {
@@ -782,7 +816,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'column_list',
-        ColumnList: columnList
+        ColumnList: columnList,
       }
     case 'table_of_contents':
       const tableOfContents: TableOfContents = {
@@ -791,7 +825,7 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
       return {
         ...block,
         Type: 'table_of_contents',
-        TableOfContents: tableOfContents
+        TableOfContents: tableOfContents,
       }
     case 'link_to_page':
       if (blockObject.link_to_page.page_id) {
@@ -800,18 +834,18 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
           Type: 'link_to_page',
           LinkToPage: {
             Type: blockObject.link_to_page.type,
-            PageId: blockObject.link_to_page.page_id
-          }
+            PageId: blockObject.link_to_page.page_id,
+          },
         }
       }
       return {
         ...block,
-        Type: 'unsupported'
+        Type: 'unsupported',
       }
     default:
       return {
         ...block,
-        Type: blockObject.type
+        Type: blockObject.type,
       }
   }
 }
@@ -993,7 +1027,10 @@ function _buildPost(pageObject: responses.PageObject): Post {
   if (pageObject.cover) {
     cover = {
       Type: pageObject.cover.type,
-      Url: pageObject.cover.type === 'external' ? (pageObject.cover.external.url || '') : '',
+      Url:
+        pageObject.cover.type === 'external'
+          ? pageObject.cover.external.url || ''
+          : '',
     }
   }
 

@@ -41,6 +41,9 @@ export type PropertyFilterObject = {
 } | {
   timestamp: 'last_edited_time'
   last_edited_time: DateFilterCondition
+} | {
+  property: 'Language',
+  multi_select: MultiSelectFilterCondition
 }
 
 export type CompoundFilterObject = {
