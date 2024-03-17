@@ -2,6 +2,7 @@
 import { Post } from '../lib/interfaces.ts'
 import { getPostLink } from '../lib/blog-helpers.ts'
 import NoContents from './NoContents.astro'
+import { Language } from '../content-constants'
 
 export interface Props {
   heading: string
@@ -9,6 +10,7 @@ export interface Props {
 }
 
 const { heading, posts } = Astro.props
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <div class="blog-posts-link">
@@ -21,7 +23,7 @@ const { heading, posts } = Astro.props
         {posts.map((post: Post) => (
           <li>
             <a
-              href={getPostLink(post.Slug)}
+              href={getPostLink(lang, post.Slug)}
               title={`${post.Icon?.Type === 'emoji' ? post.Icon.Emoji : ''}${post.Title}`}
             >
               {post.Icon && post.Icon.Type === 'emoji' ? (

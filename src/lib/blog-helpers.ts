@@ -1,3 +1,4 @@
+import { LanguageKey } from '../content-constants'
 import { BASE_PATH, REQUEST_TIMEOUT_MS } from '../server-constants'
 import type {
   Block,
@@ -128,24 +129,28 @@ export const getNavLink = (nav: string) => {
   return pathJoin(BASE_PATH, nav)
 }
 
-export const getPostLink = (slug: string) => {
-  return pathJoin(BASE_PATH, `/posts/${slug}`)
+export const getHomeLink = (lang: LanguageKey) => {
+  return pathJoin(BASE_PATH, `/${lang}/`)
 }
 
-export const getTagLink = (tag: string) => {
-  return pathJoin(BASE_PATH, `/posts/tag/${encodeURIComponent(tag)}`)
+export const getPostLink = (lang: LanguageKey, slug: string) => {
+  return pathJoin(BASE_PATH, `/${lang}/posts/${slug}`)
 }
 
-export const getPageLink = (page: number, tag: string) => {
+export const getTagLink = (lang: LanguageKey, tag: string) => {
+  return pathJoin(BASE_PATH, `/${lang}/posts/tag/${encodeURIComponent(tag)}`)
+}
+
+export const getPageLink = (lang: LanguageKey, page: number, tag: string) => {
   if (page === 1) {
-    return tag ? getTagLink(tag) : pathJoin(BASE_PATH, '/')
+    return tag ? getTagLink(lang, tag) : pathJoin(BASE_PATH, '/')
   }
   return tag
     ? pathJoin(
         BASE_PATH,
-        `/posts/tag/${encodeURIComponent(tag)}/page/${page.toString()}`
+        `/${lang}/posts/tag/${encodeURIComponent(tag)}/page/${page.toString()}`
       )
-    : pathJoin(BASE_PATH, `/posts/page/${page.toString()}`)
+    : pathJoin(BASE_PATH, `/${lang}/posts/page/${page.toString()}`)
 }
 
 export const getDateStr = (date: string) => {

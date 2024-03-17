@@ -1,11 +1,17 @@
 ---
-import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants.ts'
-import { getDatabase } from '../lib/notion/client.ts'
-import { getNavLink, getStaticFilePath, filePath } from '../lib/blog-helpers.ts'
+import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants'
+import { getSiteMeta } from '../lib/notion/client'
+import {
+  getNavLink,
+  getStaticFilePath,
+  filePath,
+  getHomeLink,
+} from '../lib/blog-helpers'
 import '../styles/syntax-coloring.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import SearchModal from '../components/SearchModal.astro'
 import SearchButton from '../components/SearchButton.astro'
+import { Language } from '../content-constants'
 
 export interface Props {
   title?: string
@@ -15,11 +21,12 @@ export interface Props {
 }
 
 const { title = '', description = '', path = '/', ogImage = '' } = Astro.props
+const lang = Language.fromUrl(Astro.url)
 
-const database = await getDatabase()
+const siteMeta = await getSiteMeta(lang)
 
-const siteTitle = title ? `${title} - ${database.Title}` : database.Title
-const siteDescription = description ? description : database.Description
+const siteTitle = title ? `${title} - ${siteMeta.Title}` : siteMeta.Title
+const siteDescription = description ? description : siteMeta.Description
 const siteURL = new URL(getNavLink(path), Astro.site).toString()
 const siteOGImage = new URL(
   getStaticFilePath('/default-og-image.png'),
@@ -27,12 +34,12 @@ const siteOGImage = new URL(
 )
 
 let coverImageURL: string = ''
-if (database.Cover) {
-  if (database.Cover.Type === 'external') {
-    coverImageURL = database.Cover.Url
-  } else if (database.Cover.Type === 'file') {
+if (siteMeta.Cover) {
+  if (siteMeta.Cover.Type === 'external') {
+    coverImageURL = siteMeta.Cover.Url
+  } else if (siteMeta.Cover.Type === 'file') {
     try {
-      coverImageURL = filePath(new URL(database.Cover.Url))
+      coverImageURL = filePath(new URL(siteMeta.Cover.Url))
     } catch (err) {
       console.log('Invalid DB cover image URL')
     }
@@ -40,9 +47,9 @@ if (database.Cover) {
 }
 
 let customIconURL: string = ''
-if (database.Icon && database.Icon.Type === 'file') {
+if (siteMeta.Icon && siteMeta.Icon.Type === 'file') {
   try {
-    customIconURL = filePath(new URL(database.Icon.Url))
+    customIconURL = filePath(new URL(siteMeta.Icon.Url))
   } catch (err) {
     console.log('Invalid DB custom icon URL')
   }
@@ -51,8 +58,8 @@ if (database.Icon && database.Icon.Type === 'file') {
 const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
 ---
 
-<!DOCTYPE html>
-<html lang="ja" prefix="og: https://ogp.me/ns#">
+<!doctype html>
+<html lang={lang} prefix="og: https://ogp.me/ns#">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="max-image-preview:large" />
@@ -64,7 +71,7 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
     <meta property="og:url" content={siteURL} />
     <meta property="og:title" content={siteTitle} />
     <meta property="og:description" content={siteDescription} />
-    <meta property="og:site_name" content={database.Title} />
+    <meta property="og:site_name" content={siteMeta.Title} />
     <meta property="og:image" content={ogImage || siteOGImage} />
     <meta name="twitter:title" content={siteTitle} />
     <meta name="twitter:description" content={siteDescription} />
@@ -84,10 +91,10 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
         {
           coverImageURL && (
             <div class="cover" style={coverBackgroundImageStyle}>
-              <a href={getNavLink("/")}>
-                <h1 class="title">{database.Title}</h1>
+              <a href={getHomeLink(lang)}>
+                <h1 class="title">{siteMeta.Title}</h1>
               </a>
-              <div class="description">{database.Description}</div>
+              <div class="description">{siteMeta.Description}</div>
             </div>
           )
         }
@@ -250,14 +257,28 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
     min-height: 100vh;
     background: var(--bg);
     color: var(--fg);
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-      Helvetica, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-      'Hiragino Sans GB', メイリオ, Meiryo, 'Apple Color Emoji', Arial,
-      sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family:
+      ui-sans-serif,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Helvetica,
+      'Hiragino Sans',
+      'Hiragino Kaku Gothic ProN',
+      'Hiragino Sans GB',
+      メイリオ,
+      Meiryo,
+      'Apple Color Emoji',
+      Arial,
+      sans-serif,
+      'Segoe UI Emoji',
+      'Segoe UI Symbol';
 
     /*background-image: radial-gradient(#ddd 1px, transparent 1px),
       radial-gradient(#ddd 1px, transparent 1px);*/
-    background-position: 0 0, 25px 25px;
+    background-position:
+      0 0,
+      25px 25px;
     background-attachment: fixed;
     background-size: 50px 50px;
 

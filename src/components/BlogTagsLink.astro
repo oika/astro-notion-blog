@@ -3,6 +3,7 @@ import type { SelectProperty } from '../lib/interfaces.ts'
 import { getTagLink } from '../lib/blog-helpers.ts'
 import NoContents from './NoContents.astro'
 import '../styles/notion-color.css'
+import { Language } from '../content-constants'
 
 export interface Props {
   heading: string
@@ -10,6 +11,7 @@ export interface Props {
 }
 
 const { heading, tags } = Astro.props
+const lang = Language.fromCurrentLocale(Astro)
 ---
 
 <div class="blog-tags-link">
@@ -21,7 +23,7 @@ const { heading, tags } = Astro.props
       <ul>
         {tags.map((tag: SelectProperty) => (
           <li>
-            <a href={getTagLink(tag.name)} class={`tag ${tag.color}`}>
+            <a href={getTagLink(lang, tag.name)} class={`tag ${tag.color}`}>
               {tag.name}
             </a>
           </li>

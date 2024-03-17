@@ -5,6 +5,8 @@ export interface Database {
   Cover: FileOrExternalWithUrl | null
 }
 
+export type SiteMeta = Database
+
 export interface Post {
   PageId: string
   Title: string
@@ -16,6 +18,12 @@ export interface Post {
   Excerpt: string
   FeaturedImage: FileOrExternalWithUrlAndExpiryTime | null
   Rank: number
+  Meta: boolean
+}
+
+export interface TitleMeta {
+  Title: string
+  Excerpt: string
 }
 
 interface BlockBase {
@@ -146,7 +154,7 @@ export interface VideoBlock extends BlockBase {
 export type HeadingBlock = Heading1Block | Heading2Block | Heading3Block
 
 export type Block =
-  BookmarkBlock
+  | BookmarkBlock
   | BreadcrumbBlock
   | BulletedListItemBlock
   | CalloutBlock
@@ -248,7 +256,9 @@ export interface FileWithUrlAndExpiryTime {
   ExpiryTime: string
 }
 
-export type FileOrExternalWithUrlAndExpiryTime = ExternalWithUrl | FileWithUrlAndExpiryTime
+export type FileOrExternalWithUrlAndExpiryTime =
+  | ExternalWithUrl
+  | FileWithUrlAndExpiryTime
 
 export interface FileOrExternalWithUrl {
   Type: 'file' | 'external'

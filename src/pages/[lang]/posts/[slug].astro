@@ -1,5 +1,5 @@
 ---
-import * as interfaces from '../../lib/interfaces.ts'
+import * as interfaces from '../../../lib/interfaces'
 import {
   getPosts,
   getAllPosts,
@@ -10,32 +10,36 @@ import {
   getAllTags,
   getAllBlocksByBlockId,
   downloadFile,
-} from '../../lib/notion/client.ts'
+} from '../../../lib/notion/client'
 import {
   getPostLink,
   filePath,
   extractTargetBlocks,
-} from '../../lib/blog-helpers.ts'
-import Layout from '../../layouts/Layout.astro'
-import PostDate from '../../components/PostDate.astro'
-import PostTags from '../../components/PostTags.astro'
-import PostTitle from '../../components/PostTitle.astro'
-import PostBody from '../../components/PostBody.astro'
-import PostRelativeLink from '../../components/PostRelativeLink.astro'
-import BlogPostsLink from '../../components/BlogPostsLink.astro'
-import BlogTagsLink from '../../components/BlogTagsLink.astro'
-import styles from '../../styles/blog.module.css'
-import { HEADING } from '../../content-constants'
-import { FileBlock, ImageBlock } from '../../lib/interfaces.ts'
+} from '../../../lib/blog-helpers'
+import Layout from '../../../layouts/Layout.astro'
+import PostDate from '../../../components/PostDate.astro'
+import PostTags from '../../../components/PostTags.astro'
+import PostTitle from '../../../components/PostTitle.astro'
+import PostBody from '../../../components/PostBody.astro'
+import PostRelativeLink from '../../../components/PostRelativeLink.astro'
+import BlogPostsLink from '../../../components/BlogPostsLink.astro'
+import BlogTagsLink from '../../../components/BlogTagsLink.astro'
+import styles from '../../../styles/blog.module.css'
+import { HEADING, LANGUAGE_KEYS, LanguageKey } from '../../../content-constants'
+import { FileBlock, ImageBlock } from '../../../lib/interfaces'
 
 export async function getStaticPaths() {
-  const posts = await getAllPosts()
-  return posts.map((post: interfaces.Post) => ({ params: { slug: post.Slug } }))
+  const paths: { params: { slug: string; lang: LanguageKey } }[] = []
+  for (const lang of LANGUAGE_KEYS) {
+    const posts = await getAllPosts(lang)
+    paths.push(...posts.map((post) => ({ params: { slug: post.Slug, lang } })))
+  }
+  return paths
 }
 
-const { slug } = Astro.params
+const { slug, lang } = Astro.params
 
-const post = await getPostBySlug(slug)
+const post = await getPostBySlug(lang, slug)
 if (!post) {
   throw new Error('Post not found. slug: ${slug}')
 }
@@ -43,22 +47,28 @@ if (!post) {
 const [blocks, allPosts, rankedPosts, recentPosts, tags, postsHavingSameTag] =
   await Promise.all([
     getAllBlocksByBlockId(post.PageId),
-    getAllPosts(),
-    getRankedPosts(),
-    getPosts(5),
-    getAllTags(),
-    getPostsByTag(post.Tags[0]?.name, 6),
+    getAllPosts(lang),
+    getRankedPosts(lang),
+    getPosts(lang, 5),
+    getAllTags(lang),
+    getPostsByTag(lang, post.Tags[0]?.name, 6),
   ])
 
-const fileAtacchedBlocks: Array<ImageBlock | FileBlock> = extractTargetBlocks('image', blocks)
+const fileAtacchedBlocks: Array<ImageBlock | FileBlock> = extractTargetBlocks(
+  'image',
+  blocks
+)
   .concat(extractTargetBlocks('file', blocks))
   .filter((block): block is ImageBlock | FileBlock => {
     if (!block) {
       return false
     }
-    const imageOrFile = block.Type === 'image' ? block.Image
-      : block.Type === 'file' ? block.File
-      : undefined
+    const imageOrFile =
+      block.Type === 'image'
+        ? block.Image
+        : block.Type === 'file'
+          ? block.File
+          : undefined
     return (imageOrFile?.File?.Url ?? '') !== ''
   })
 
@@ -77,9 +87,12 @@ await Promise.all(
       promise.then((block) => {
         let url!: URL
         try {
-          const file = block.Type === 'image' ? block.Image.File
-            : block.Type === 'file' ? block.File.File
-            : undefined
+          const file =
+            block.Type === 'image'
+              ? block.Image.File
+              : block.Type === 'file'
+                ? block.File.File
+                : undefined
           url = new URL(file?.Url ?? '')
         } catch (err) {
           console.log('Invalid file URL')
@@ -104,7 +117,7 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 <Layout
   title={post.Title}
   description={post.Excerpt}
-  path={getPostLink(post.Slug)}
+  path={getPostLink(lang, post.Slug)}
   ogImage={ogImage}
 >
   <div slot="main" class={styles.main}>
@@ -123,13 +136,13 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 
   <div slot="aside" class="aside">
     <BlogPostsLink
-      heading={HEADING.SAME_CATEGORY}
+      heading={HEADING[lang].SAME_CATEGORY}
       posts={postsHavingSameTag.filter(
         (p: interfaces.Post) => p.Slug !== post.Slug
       )}
     />
-    <BlogPostsLink heading={HEADING.RECOMMENDED} posts={rankedPosts} />
-    <BlogPostsLink heading={HEADING.RECENT} posts={recentPosts} />
-    <BlogTagsLink heading={HEADING.CATEGORIES} tags={tags} />
+    <BlogPostsLink heading={HEADING[lang].RECOMMENDED} posts={rankedPosts} />
+    <BlogPostsLink heading={HEADING[lang].RECENT} posts={recentPosts} />
+    <BlogTagsLink heading={HEADING[lang].CATEGORIES} tags={tags} />
   </div>
 </Layout>

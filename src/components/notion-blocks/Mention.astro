@@ -4,22 +4,24 @@ import { getPostByPageId } from '../../lib/notion/client'
 import { getPostLink } from '../../lib/blog-helpers.ts'
 import '../../styles/notion-color.css'
 import arrow from '../../images/icon-arrow-link.svg'
+import { Language } from '../../content-constants'
 
 export interface Props {
   pageId: string
 }
 
 const { pageId } = Astro.props
+const lang = Language.fromCurrentLocale(Astro)
 
 let post: Post | null = null
 if (pageId) {
-  post = await getPostByPageId(pageId)
+  post = await getPostByPageId(lang, pageId)
 }
 ---
 
 {
   post ? (
-    <a href={getPostLink(post.Slug)} class="link">
+    <a href={getPostLink(lang, post.Slug)} class="link">
       <>
         <span class="icon">
           {post.Icon && post.Icon.Type === 'emoji' ? (
@@ -33,7 +35,11 @@ if (pageId) {
           ) : (
             '📄'
           )}
-          <img src={arrow.src} class="icon-link" alt="Arrow icon of a page link" />
+          <img
+            src={arrow.src}
+            class="icon-link"
+            alt="Arrow icon of a page link"
+          />
         </span>
         <span class="text">{post.Title}</span>
       </>
@@ -42,7 +48,11 @@ if (pageId) {
     <a class="link">
       <span class="icon">
         🚫
-        <img src={arrow.src} class="icon-link" alt="Arrow icon of a page link" />
+        <img
+          src={arrow.src}
+          class="icon-link"
+          alt="Arrow icon of a page link"
+        />
       </span>
       <span class="text not-found">Post not found</span>
     </a>

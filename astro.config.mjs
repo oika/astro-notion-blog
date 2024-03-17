@@ -41,4 +41,11 @@ export default defineConfig({
     FeaturedImageDownloader(),
     PublicNotionCopier(),
   ],
+  i18n: {
+    defaultLocale: 'ja',
+    locales: ['ja', 'en', 'zh'],
+    routing: {
+      prefixDefaultLocale: true
+    }
+  }
 });
