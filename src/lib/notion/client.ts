@@ -51,11 +51,17 @@ import type {
   FileOrExternalWithUrl,
   ExternalWithUrl,
   FileOrExternalWithUrlAndExpiryTime,
+  TitleMeta,
+  SiteMeta,
 } from '../interfaces'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Client, APIResponseError } from '@notionhq/client'
 import AsyncLock from 'async-lock'
-import { LANGUAGE_KEYS, LanguageKey } from '../../content-constants'
+import {
+  LANGUAGE_KEYS,
+  LanguageKey,
+  SLUG_META_TITLE,
+} from '../../content-constants'
 
 const client = new Client({
   auth: NOTION_API_SECRET,
@@ -66,18 +72,43 @@ const asyncLock = new AsyncLock({
   maxOccupationTime: 60000,
   maxPending: 100,
 })
+const ASYNC_LOCK_POSTS = 'posts'
+const ASYNC_LOCK_DB = 'database'
 
-const postsCacheByLang = new Map<LanguageKey, Post[]>()
+const postsCacheByLang = new Map<
+  LanguageKey,
+  { posts: Post[]; titleMeta?: TitleMeta }
+>()
 let dbCache: Database | null = null
 
 const numberOfRetry = 2
 
+async function getTitleMeta(lang: LanguageKey): Promise<TitleMeta | undefined> {
+  return await asyncLock.acquire(ASYNC_LOCK_POSTS, () => getTitleMetaCore(lang))
+}
+
+async function getTitleMetaCore(
+  lang: LanguageKey
+): Promise<TitleMeta | undefined> {
+  const cache = postsCacheByLang.get(lang)
+  if (cache != null) {
+    return Promise.resolve(cache.titleMeta)
+  }
+
+  const postsAndMeta = await fetchPostsAndMeta(lang)
+  postsCacheByLang.set(lang, postsAndMeta)
+  return postsAndMeta.titleMeta
+}
+
 export async function getAllPostsOfAllLanguages(): Promise<Post[]> {
-  return await asyncLock.acquire('getAllPosts', getAllPostsOfAllLanguagesCore)
+  return await asyncLock.acquire(
+    ASYNC_LOCK_POSTS,
+    getAllPostsOfAllLanguagesCore
+  )
 }
 
 export async function getAllPosts(lang: LanguageKey): Promise<Post[]> {
-  return await asyncLock.acquire('getAllPosts', () => getAllPostsCore(lang))
+  return await asyncLock.acquire(ASYNC_LOCK_POSTS, () => getAllPostsCore(lang))
 }
 
 async function getAllPostsOfAllLanguagesCore(): Promise<Post[]> {
@@ -91,9 +122,15 @@ async function getAllPostsOfAllLanguagesCore(): Promise<Post[]> {
 async function getAllPostsCore(lang: LanguageKey): Promise<Post[]> {
   const cache = postsCacheByLang.get(lang)
   if (cache != null) {
-    return Promise.resolve(cache)
+    return Promise.resolve(cache.posts)
   }
 
+  const postsAndMeta = await fetchPostsAndMeta(lang)
+  postsCacheByLang.set(lang, postsAndMeta)
+  return postsAndMeta.posts
+}
+
+async function fetchPostsAndMeta(lang: LanguageKey) {
   const params: requestParams.QueryDatabase = {
     database_id: DATABASE_ID,
     filter: {
@@ -158,12 +195,12 @@ async function getAllPostsCore(lang: LanguageKey): Promise<Post[]> {
     params['start_cursor'] = res.next_cursor
   }
 
-  const posts = results
+  const allPosts = results
     .filter((pageObject) => _validPageObject(pageObject))
     .map((pageObject) => _buildPost(pageObject))
-
-  postsCacheByLang.set(lang, posts)
-  return posts
+  const posts = allPosts.filter((p) => !p.Meta)
+  const titleMeta = allPosts.find((p) => p.Meta && p.Slug === SLUG_META_TITLE)
+  return { posts, titleMeta }
 }
 
 export async function getPosts(
@@ -473,7 +510,26 @@ export async function downloadFile(url: URL) {
   }
 }
 
-export async function getDatabase(): Promise<Database> {
+export async function getDatabase(): Promise<Pick<Database, 'Icon' | 'Cover'>> {
+  return retrieveDatabase()
+}
+
+export async function getSiteMeta(lang: LanguageKey): Promise<SiteMeta> {
+  const database = await retrieveDatabase()
+  const titleMeta = await getTitleMeta(lang)
+
+  return {
+    ...database,
+    Title: titleMeta?.Title ?? database.Title,
+    Description: titleMeta?.Excerpt ?? database.Description,
+  }
+}
+
+async function retrieveDatabase(): Promise<Database> {
+  return asyncLock.acquire(ASYNC_LOCK_DB, retrieveDatabaseCore)
+}
+
+async function retrieveDatabaseCore(): Promise<Database> {
   if (dbCache !== null) {
     return Promise.resolve(dbCache)
   }
@@ -998,7 +1054,7 @@ function _validPageObject(pageObject: responses.PageObject): boolean {
     prop.Page.title.length > 0 &&
     !!prop.Slug.rich_text &&
     prop.Slug.rich_text.length > 0 &&
-    !!prop.Date.date
+    (!!prop.Date.date || !!prop.Meta)
   )
 }
 
@@ -1068,6 +1124,7 @@ function _buildPost(pageObject: responses.PageObject): Post {
         : '',
     FeaturedImage: featuredImage,
     Rank: prop.Rank.number ? prop.Rank.number : 0,
+    Meta: prop.Meta.checkbox === true,
   }
 
   return post
