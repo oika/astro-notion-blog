@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <div class="search-modal-container">
@@ -101,6 +102,8 @@
 </style>
 
 <script>
+  import { Language } from '../content-constants'
+
   interface FeedItem {
     title: string | null
     link: string | null
@@ -108,12 +111,16 @@
     pubDate: string | null
   }
 
+  const lang = Language.fromUrl(new URL(window.location.href))
+
   document.addEventListener('DOMContentLoaded', async () => {
     let feedItems: FeedItem[] = []
     let fetched = false
 
     async function openModal() {
-      document.querySelector<HTMLElement>('.search-modal-container')!.style.display = 'block'
+      document.querySelector<HTMLElement>(
+        '.search-modal-container'
+      )!.style.display = 'block'
       document.querySelector<HTMLElement>('.search-prompt input')?.focus()
 
       if (!fetched) {
@@ -123,7 +130,9 @@
     }
 
     function closeModal() {
-      document.querySelector<HTMLElement>('.search-modal-container')!.style.display = 'none'
+      document.querySelector<HTMLElement>(
+        '.search-modal-container'
+      )!.style.display = 'none'
     }
 
     function handleKeydown(event: KeyboardEvent) {
@@ -145,7 +154,9 @@
     }
 
     function select() {
-      const a = document.querySelector<HTMLElement>('.search-result ul > li.selected a')
+      const a = document.querySelector<HTMLElement>(
+        '.search-result ul > li.selected a'
+      )
       a?.click()
     }
 
@@ -201,7 +212,10 @@
     }
 
     function searchAndRender() {
-      const text = document.querySelector<HTMLInputElement>('.search-prompt input')?.value.trim() ?? ''
+      const text =
+        document
+          .querySelector<HTMLInputElement>('.search-prompt input')
+          ?.value.trim() ?? ''
 
       if (text !== '') {
         const results = search(text)
@@ -253,7 +267,7 @@
       const port = url.port ? `:${url.port}` : ''
 
       const res = await fetch(
-        `${url.protocol}//${url.hostname}${port}/feed`
+        `${url.protocol}//${url.hostname}${port}/${lang}/feed.xml`
       )
       if (res.status !== 200) {
         console.log(res.status)
