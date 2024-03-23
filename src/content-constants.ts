@@ -1,4 +1,5 @@
 import type { APIContext, AstroGlobal } from 'astro'
+import { SETTING } from './setting'
 
 export const SLUG_META_TITLE = 'title'
 
@@ -21,7 +22,7 @@ export const Language = {
       currentLocale == null ||
       !LANGUAGE_KEYS.some((lang) => lang === currentLocale)
     ) {
-      return 'ja'
+      return SETTING.i18n.defaultLanguage
     }
 
     return currentLocale as LanguageKey
@@ -31,14 +32,14 @@ export const Language = {
     const lang = LANGUAGE_KEYS.find(
       (l) => l.toLowerCase() === langInUrl.toLowerCase()
     )
-    return lang ?? 'ja'
+    return lang ?? SETTING.i18n.defaultLanguage
   },
   fromApiContext: (context: APIContext) => {
     const langParam = context.params.lang
     const lang = LANGUAGE_KEYS.find(
       (l) => l.toLowerCase() === langParam?.toLowerCase()
     )
-    return lang ?? 'ja'
+    return lang ?? SETTING.i18n.defaultLanguage
   },
 }
 

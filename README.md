@@ -64,3 +64,6 @@ The following can be changed by rewriting `src/setting.ts`.
 
 * layout.showsFeaturedImageInPostPage
    * Whether to display the eye-catching image on the article page as well
+* i18n.defaultLanguage
+   * Default language
+      * Also change `i18n.defaultLocale` in `astro.config.mjs`.

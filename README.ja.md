@@ -64,3 +64,6 @@
 
 * layout.showsFeaturedImageInPostPage
    * アイキャッチ画像を記事ページにも表示するか
+* i18n.defaultLanguage
+   * デフォルト言語
+      * `astro.config.mjs` の `i18n.defaultLocale` もあわせて変更してください
