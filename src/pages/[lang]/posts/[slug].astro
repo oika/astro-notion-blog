@@ -27,6 +27,8 @@ import BlogTagsLink from '../../../components/BlogTagsLink.astro'
 import styles from '../../../styles/blog.module.css'
 import { HEADING, LANGUAGE_KEYS, LanguageKey } from '../../../content-constants'
 import { FileBlock, ImageBlock } from '../../../lib/interfaces'
+import PostFeaturedImage from '../../../components/PostFeaturedImage.astro'
+import { SETTING } from '../../../setting'
 
 export async function getStaticPaths() {
   const paths: { params: { slug: string; lang: LanguageKey } }[] = []
@@ -125,6 +127,11 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
       <PostDate post={post} />
       <PostTags post={post} />
       <PostTitle post={post} enableLink={false} />
+      {
+        SETTING.layout.showsFeaturedImageInPostPage && (
+          <PostFeaturedImage post={post} />
+        )
+      }
       <PostBody blocks={blocks} />
       <PostTags post={post} />
 
