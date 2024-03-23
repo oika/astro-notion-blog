@@ -15,6 +15,7 @@ The differences from the original (as of v0.9.2) are as follows
 
 * Difference in layout
    * Site name will be displayed on the header image
+   * Eye-catching images are also displayed on article pages (settings can be changed)
 * Multilingual support
    * You can publish articles by language
 * Other (for developers)
@@ -56,3 +57,10 @@ If you want to add other languages, the following source modifications are requi
 * content-constants.ts
    * Add languages to `LANGUAGE_KEYS`, `LANGUAGE`
    * Add label texts to `HEADING`
+
+## Change Settings
+
+The following can be changed by rewriting `src/setting.ts`.
+
+* layout.showsFeaturedImageInPostPage
+   * Whether to display the eye-catching image on the article page as well
