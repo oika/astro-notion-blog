@@ -91,9 +91,32 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
         {
           coverImageURL && (
             <div class="cover" style={coverBackgroundImageStyle}>
-              <a href={getHomeLink(lang)}>
-                <h1 class="title">{siteMeta.Title}</h1>
-              </a>
+              <h1 class="title">
+                <a href={getHomeLink(lang)}>
+                  {siteMeta.Icon && siteMeta.Icon.Type === 'emoji' ? (
+                    <>
+                      <span>{siteMeta.Icon.Emoji}</span>
+                      {siteMeta.Title}
+                    </>
+                  ) : siteMeta.Icon && siteMeta.Icon.Type === 'external' ? (
+                    <>
+                      <img src={siteMeta.Icon.Url} alt="Site icon image" />
+                      {siteMeta.Title}
+                    </>
+                  ) : siteMeta.Icon && siteMeta.Icon.Type === 'file' ? (
+                    <>
+                      <img
+                        src={customIconURL}
+                        class="custom-icon"
+                        alt="Site icon image"
+                      />
+                      {siteMeta.Title}
+                    </>
+                  ) : (
+                    siteMeta.Title
+                  )}
+                </a>
+              </h1>
               <div class="description">{siteMeta.Description}</div>
             </div>
           )
@@ -108,9 +131,13 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
             <footer>
               <div>
                 <span>Powered by&nbsp;</span>
-                <a href="https://github.com/oika/astro-notion-blog-multi-lang">astro-notion-blog-multi-lang</a>
+                <a href="https://github.com/oika/astro-notion-blog-multi-lang"
+                  >astro-notion-blog-multi-lang</a
+                >
                 <span>(forked from</span>
-                <a href="https://github.com/otoyo/astro-notion-blog">astro-notion-blog</a>
+                <a href="https://github.com/otoyo/astro-notion-blog"
+                  >astro-notion-blog</a
+                >
                 <span>)</span>
               </div>
             </footer>
@@ -182,8 +209,34 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
   }
   div.cover .title {
     font-weight: bold;
-    color: white;
     font-size: 2rem;
+  }
+  div.cover .title a {
+    color: white;
+  }
+  @media (max-width: 640px) {
+    div.cover .title {
+      font-size: 1.6rem;
+    }
+  }
+  div.cover .title span,
+  div.cover .title img {
+    display: inline-block;
+    font-size: 1.1em;
+  }
+  div.cover .title span {
+    margin-right: 0.3em;
+    margin-left: -0.1rem;
+  }
+  div.cover .title img {
+    width: 1.2em;
+    height: 1.2em;
+    margin-right: 0.2em;
+    margin-left: -0.3rem;
+    vertical-align: sub;
+  }
+  div.cover .title img.custom-icon {
+    border-radius: var(--radius);
   }
   div.cover .description {
     color: white;
@@ -309,19 +362,6 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
     padding: var(--gap-quarter);
     border-radius: var(--radius);
     background: rgba(247, 212, 255, 0.8);
-  }
-
-  h1 {
-    margin: 0;
-    color: var(--fg);
-    font-size: 2rem;
-    font-weight: 700;
-  }
-
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 1.6rem;
-    }
   }
 
   ol {
