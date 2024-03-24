@@ -24,6 +24,8 @@ The differences from the original (as of v0.9.2) are as follows
    * Reviewed type definitions and corrected all type errors
       * Added type checking at build time
 
+DEMO: https://astro-notion-blog-multi-lang.pages.dev/en/
+
 ## How to use
 
 Please refer to the original repository for basic installation procedures.
@@ -46,6 +48,8 @@ In addition, the following steps are required for multilingual support.
    * Meta: Checked
    * Slug: `title` 
    * Language: Target language
+
+You can also duplicate [this template](https://oika.notion.site/3a180019423a4a66b6a9ab86b29b3ce7?v=4bd53dbb03ff48e584790b1cbf0a6a84) for your own use.
 
 ## Addition of supported languages
 
