@@ -62,8 +62,9 @@ If you want to add other languages, the following source modifications are requi
 
 The following can be changed by rewriting `src/setting.ts`.
 
-* layout.showsFeaturedImageInPostPage
-   * Whether to display the eye-catching image on the article page as well
-* i18n.defaultLanguage
-   * Default language
+* layout
+   * showsFeaturedImageInPostPage:  Whether to display the eye-catching image on the article page as well
+   * siteTitleColor: Text color of site title
+* i18n
+   * defaultLanguage: Default language
       * Also change `i18n.defaultLocale` in `astro.config.mjs`.

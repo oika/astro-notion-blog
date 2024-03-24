@@ -12,6 +12,7 @@ import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import SearchModal from '../components/SearchModal.astro'
 import SearchButton from '../components/SearchButton.astro'
 import { Language } from '../content-constants'
+import { SETTING } from '../setting'
 
 export interface Props {
   title?: string
@@ -56,6 +57,7 @@ if (siteMeta.Icon && siteMeta.Icon.Type === 'file') {
 }
 
 const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
+const siteTitleColorStyle = `color: ${SETTING.layout.siteTitleColor}`
 ---
 
 <!doctype html>
@@ -92,7 +94,7 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
           coverImageURL && (
             <div class="cover" style={coverBackgroundImageStyle}>
               <h1 class="title">
-                <a href={getHomeLink(lang)}>
+                <a href={getHomeLink(lang)} style={siteTitleColorStyle}>
                   {siteMeta.Icon && siteMeta.Icon.Type === 'emoji' ? (
                     <>
                       <span>{siteMeta.Icon.Emoji}</span>
@@ -117,7 +119,9 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
                   )}
                 </a>
               </h1>
-              <div class="description">{siteMeta.Description}</div>
+              <div class="description" style={siteTitleColorStyle}>
+                {siteMeta.Description}
+              </div>
             </div>
           )
         }
@@ -211,9 +215,6 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
     font-weight: bold;
     font-size: 2rem;
   }
-  div.cover .title a {
-    color: white;
-  }
   @media (max-width: 640px) {
     div.cover .title {
       font-size: 1.6rem;
@@ -239,7 +240,6 @@ const coverBackgroundImageStyle = `background-image: url(${coverImageURL})`
     border-radius: var(--radius);
   }
   div.cover .description {
-    color: white;
     font-size: 0.95rem;
   }
 
