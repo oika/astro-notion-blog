@@ -24,6 +24,8 @@
    * 型定義を見直し、すべての型エラーを修正
       * あわせてビルド時の型チェックを追加
 
+DEMO: https://astro-notion-blog-multi-lang.pages.dev/ja/
+
 ## 利用方法
 
 導入の基本的な手順は本家リポジトリを参照してください。
@@ -46,6 +48,8 @@
    * Meta：チェック
    * Slug： `title` 
    * Language：対象の言語
+
+[こちらのテンプレート](https://oika.notion.site/3a180019423a4a66b6a9ab86b29b3ce7?v=4bd53dbb03ff48e584790b1cbf0a6a84)を複製して利用いただくことも可能です。
 
 ## 対応言語の追加について
 
